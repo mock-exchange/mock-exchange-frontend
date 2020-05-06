@@ -109,3 +109,12 @@ npm install -D @sveltejs/svelte-virtual-list
 ## Bugs and feedback
 
 Sapper is in early development, and may have the odd rough edge here and there. Please be vocal over on the [Sapper issue tracker](https://github.com/sveltejs/sapper/issues).
+
+
+Note from Eric
+
+Look at these two sources for smui
+https://github.com/hperrin/svelte-material-ui/issues/29
+https://github.com/manuel3108/sapper-smui-template
+
+
