@@ -7,6 +7,8 @@
     import { owner_name } from '../store.js'
     import { makeChart } from '../test.js'
 
+    import Button from '@smui/button';
+
     let orders;
     let active_orders;
     onMount(async () => {
@@ -41,6 +43,8 @@
 </style>
 
 <h1>Trade</h1>
+
+<Button on:click={() => alert('Clicked!')}>Just a Button</Button>
 
 <h2>Price chart here</h2>
 
