@@ -21,12 +21,23 @@ lineSeries.setData([
 */
     console.log("makeChart() width:"+el.offsetWidth);
 
+/*
+var red = 'rgba(255, 0, 0, 1)';
+var green = 'rgba(0, 255, 0, 1)';
+*/
+
+var red = 'rgba(228, 78, 93, 1)';
+var green = 'rgba(95, 186, 137, 1)';
+var white = 'rgba(255, 255, 255, 0.9)';
+var black = 'rgba(0, 0, 0, 0.9)';
+
+
 var chart = LightweightCharts.createChart(el, {
 	width: el.offsetWidth,
   height: 300,
 	layout: {
-		backgroundColor: '#000000',
-		textColor: 'rgba(255, 255, 255, 0.9)',
+		backgroundColor: white,
+		textColor: black,
 	},
 	grid: {
 		vertLines: {
@@ -55,14 +66,6 @@ priceScale: {
 		},
 		mode: LightweightCharts.PriceScaleMode.Logarithmic,
 	},
-*/
-
-var red = 'rgba(255, 0, 0, 1)';
-var green = 'rgba(0, 255, 0, 1)';
-
-/*
-var red = 'rgba(228, 78, 93, 1)';
-var green = 'rgba(95, 186, 137, 1)';
 */
 
 var candleSeries = chart.addCandlestickSeries({

@@ -7,7 +7,23 @@
     import { owner_name } from '../store.js'
     import { makeChart } from '../test.js'
 
-    import Button from '@smui/button';
+    import Button, {Group, GroupItem, Label, Icon} from '@smui/button';
+    import Card from '@smui/card';
+    import DataTable, {Head, Body, Row, Cell} from '@smui/data-table';
+    import Chip, {Set, Checkmark, Text} from '@smui/chips';
+    import Select, {Option} from '@smui/select';
+
+    import Textfield, {Input, Textarea} from '@smui/textfield';
+    import HelperText from '@smui/textfield/helper-text/index';
+
+    let direction = 'buy';
+    let directions = ['buy', 'sell'];
+
+    let type = 'limit';
+    let types = ['limit', 'market'];
+
+    let valuePrice = '';
+    let valueAmount = '';
 
     let orders;
     let active_orders;
@@ -40,113 +56,97 @@
 
 </script>
 <style>
+.add_order_form {
+    border: 0px solid black;
+}
+.trade_topbar {
+    border: 1px solid gray;
+}
+
+.columns {
+}
+.columns > * {
+    margin: 1em;
+
+}
 </style>
 
-<h1>Trade</h1>
+<div class="trade_topbar">
+    Market select goes here..
+</div>
 
-<Button on:click={() => alert('Clicked!')}>Just a Button</Button>
-
-<h2>Price chart here</h2>
 
 <div id="chart"></div>
 
 <h2>Form to submit order</h2>
 
+<div class="columns add_order_form">
 <form on:submit|preventDefault="{handleSubmit}">
 
-<label>Direction</label>
-<select name="direction">
-    <option value="buy">Buy</option>
-    <option value="sell">Sell</option>
-</select>
+    <div>
+    <Select variant="filled" bind:value={direction} label="Direction">
+      {#each directions as d}
+        <Option value={d} selected={direction === d}>{d}</Option>
+      {/each}
+    </Select>
 
-<label>Type</label>
-<select name="type">
-    <option value="limit">Limit</option>
-    <option value="market">Market</option>
-</select>
-<label>Amount</label>
-<input type="text" name="amount" />
+    <Select variant="filled" bind:value={type} label="Type">
+      {#each types as t}
+        <Option value={t} selected={type === t}>{t}</Option>
+      {/each}
+    </Select>
 
-<label>Price</label>
-<input type="text" name="price" />
+    </div>
 
-<button type="submit">Submit Order</button>
+    <div>
+    <Textfield lineRipple={false} bind:value={valuePrice} label="Price" input$aria-controls="helper-text-price" input$aria-describedby="helper-text-price" />
+    </div>
+
+    <div>
+    <Textfield lineRipple={false} bind:value={valueAmount} label="Amount" input$aria-controls="helper-text-amount" input$aria-describedby="helper-text-amount" />
+    </div>
+
+    <div>
+    <Button variant="raised" on:click={handleSubmit}>Submit Order</Button>
+    </div>
 
 </form>
+</div>
+
 
 <h2>Active orders</h2>
 
 {#if active_orders}
-<table border=1 width="100%">
-<thead>
-    <tr>
-        <th>Id</th>
-        <th>Market</th>
-        <th>Type</th>
-        <th>Direction</th>
-        <th>Price</th>
-        <th>Amt</th>
-        <th>Amt Left</th>
-        <th>Balance</th>
-        <th>Status</th>
-    </tr>
-</thead>
-<tbody>
-  {#each active_orders as o }
-  <tr>
-    <td>{o.id}</td>
-    <td>{o.market}</td>
-    <td>{o.type}</td>
-    <td>{o.direction}</td>
-    <td>{o.price}</td>
-    <td>{o.amount}</td>
-    <td>{o.amount_left}</td>
-    <td>{o.balance}</td>
-    <td>{o.status}</td>
-  </tr>
-  {/each}
-</tbody>
-</table>
-{:else}
-  <p class="loading">loading...</p>
-{/if}
-
-
-
-<h2>Order history (closed)</h2>
-
-{#if orders}
-<table border=1 width="100%">
-<thead>
-    <tr>
-        <th>Id</th>
-        <th>Market</th>
-        <th>Type</th>
-        <th>Direction</th>
-        <th>Price</th>
-        <th>Amt</th>
-        <th>Amt Left</th>
-        <th>Balance</th>
-        <th>Status</th>
-    </tr>
-</thead>
-<tbody>
-  {#each orders as o }
-  <tr>
-    <td>{o.id}</td>
-    <td>{o.market}</td>
-    <td>{o.type}</td>
-    <td>{o.direction}</td>
-    <td>{o.price}</td>
-    <td>{o.amount}</td>
-    <td>{o.amount_left}</td>
-    <td>{o.balance}</td>
-    <td>{o.status}</td>
-  </tr>
-  {/each}
-</tbody>
-</table>
+<DataTable table$aria-label="Order list" style="width: 100%;">
+  <Head>
+    <Row>
+      <Cell>Id</Cell>
+      <Cell>Market</Cell>
+      <Cell>Type</Cell>
+      <Cell>Direction</Cell>
+      <Cell>Price</Cell>
+      <Cell>Amt</Cell>
+      <Cell>Amt Left</Cell>
+      <Cell>Balance</Cell>
+      <Cell>Status</Cell>
+    </Row>
+  </Head>
+  <Body>
+    {#each active_orders as o }
+    <Row>
+      <Cell>{o.id}</Cell>
+      <Cell>{o.market}</Cell>
+      <Cell>{o.type}</Cell>
+      <Cell>{o.direction}</Cell>
+      <Cell>{o.price}</Cell>
+      <Cell>{o.amount}</Cell>
+      <Cell>{o.amount_left}</Cell>
+      <Cell>{o.balance}</Cell>
+      <Cell>{o.status}</Cell>
+    </Row>
+    {/each}
+  </Body>
+</DataTable>
 {:else}
   <p class="loading">loading...</p>
 {/if}
