@@ -22,18 +22,44 @@
         window.localStorage.setItem('owner_name', m.name);
         owner_name.set(m.name)
     }
+
+    function handleSearch(form) {
+        console.log("handleSearch()");
+        console.log("form:",form);
+        var q = document.forms.search_form.elements['q'].value;
+        console.log("q:"+q);
+        fetch(`/api/owner?name=${q}`)
+        .then(r => r.json())
+        .then(data => {
+            owners = data;
+        });
+
+    }
 </script>
 
 <h1>Owners</h1>
 
+<form name="search_form" on:submit|preventDefault="{handleSearch}">
+  <div class="row">
+    <div class="col s12">
+      <div class="row">
+        <div class="input-field col s12">
+          <i class="material-icons prefix">search</i>
+          <input type="text" name="q" id="autocomplete-input" class="autocomplete">
+          <!-- <label for="autocomplete-input">Autocomplete</label> -->
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
 
 {#if owners}
 <div class="owner-list">
   {#each owners as market }
-  <a class="card-body" on:click={handleClick(market)}>
+  <button class="card-body" on:click={handleClick(market)}>
     <h4 class="card-title">{market.name}</h4>
     <h5 class="card-subtitle">{market.title}</h5>
-  </a>
+  </button>
   {/each}
 </div>
 {:else}

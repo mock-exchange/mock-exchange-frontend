@@ -80,8 +80,8 @@
 <nav>
     <ul>
         <li><a href="." class="nav_logo"><img src="/logo.png" alt="Mock Exchange Logo" /></a></li>
-        <li><a aria-current='{segment === "trade" ? "page" : undefined}' href="trade">Trade</a></li>
-        <li><a aria-current='{segment === "account" ? "page" : undefined}' href="account">Accounts</a></li>
+        <li><a aria-current='{segment === "trade" ? "page" : undefined}' href="trade/BTCUSD">Trade</a></li>
+        <li><a aria-current='{segment === "account" ? "page" : undefined}' href="account">Account</a></li>
         <li><a aria-current='{segment === "market" ? "page" : undefined}' href="market">Markets</a></li>
         <li class="right"><a aria-current='{segment === "owner" ? "page" : undefined}' href="owner">{$owner_name}</a></li>
     </ul>
