@@ -11,24 +11,14 @@
     const { page } = stores();
 
 
-    import DataTable, {Head, Body, Row, Cell} from '@smui/data-table';
-    import Tab, {Icon, Label} from '@smui/tab';
-    import TabBar from '@smui/tab-bar';
-    import Button from '@smui/button';
-
     let markets;
 
     let active_orders;
+    let ledgers;
+    let trades;
 
     onMount(async () => {
         console.log("markets fetch");
-        var id = window.localStorage.getItem('owner_id');
-
-        await fetch(`/api/order?owner=` + id)
-        .then(r => r.json())
-        .then(data => {
-            active_orders = data;
-        });
     })
 
     let active = 'Ledger'
@@ -36,11 +26,30 @@
     let entities = ['Ledger','Orders','Trades'];
     let entity;
 
+    let id
 
     // This runs when the route changes
     $: if (process.browser) {
         entity = $page.params.entity
         console.log('process.browser  $page.params.entity:'+entity);
+
+        id = window.localStorage.getItem('owner_id');
+
+        if (entity === 'Ledger'){
+            active_orders = undefined
+        }
+        else if (entity === 'Orders'){
+
+            fetch(`/api/order?owner=` + id)
+            .then(r => r.json())
+            .then(data => {
+                active_orders = data;
+            });
+
+        }
+        else if (entity === 'Trades'){
+            active_orders = undefined
+        }
 
     }
 
@@ -72,41 +81,82 @@ Active: {active}
     {/each}
 </div>
 
+{#if entity === 'Orders'}
+
 <h2>Orders</h2>
 
 {#if active_orders}
-<DataTable table$aria-label="Order list" style="width: 100%;">
-  <Head>
-    <Row>
-      <Cell>Id</Cell>
-      <Cell>Market</Cell>
-      <Cell>Type</Cell>
-      <Cell>Direction</Cell>
-      <Cell>Price</Cell>
-      <Cell>Amt</Cell>
-      <Cell>Amt Left</Cell>
-      <Cell>Balance</Cell>
-      <Cell>Status</Cell>
-    </Row>
-  </Head>
-  <Body>
+<table>
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Market</th>
+      <th>Type</th>
+      <th>Direction</th>
+      <th>Price</th>
+      <th>Amt</th>
+      <th>Amt Left</th>
+      <th>Balance</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
     {#each active_orders as o }
-    <Row>
-      <Cell>{o.id}</Cell>
-      <Cell>{o.market}</Cell>
-      <Cell>{o.type}</Cell>
-      <Cell>{o.direction}</Cell>
-      <Cell>{o.price}</Cell>
-      <Cell>{o.amount}</Cell>
-      <Cell>{o.amount_left}</Cell>
-      <Cell>{o.balance}</Cell>
-      <Cell>{o.status}</Cell>
-    </Row>
+    <tr>
+      <td>{o.id}</td>
+      <td>{o.market}</td>
+      <td>{o.type}</td>
+      <td>{o.direction}</td>
+      <td>{o.price}</td>
+      <td>{o.amount}</td>
+      <td>{o.amount_left}</td>
+      <td>{o.balance}</td>
+      <td>{o.status}</td>
+    </tr>
     {/each}
-  </Body>
-</DataTable>
+  </tbody>
+</table>
 {:else}
   <p class="loading">loading...</p>
 {/if}
 
+{/if}
+
+
+{#if entity === 'Ledger'}
+
+<h2>Ledger</h2>
+
+{#if ledgers}
+
+{:else}
+  <p class="loading">loading...</p>
+{/if}
+
+{/if}
+
+
+{#if entity === 'Trades'}
+
+<h2>Trades</h2>
+
+{#if 1}
+<table>
+    <thead>
+        <tr>
+            <th>Trade</th>
+            <th>Executed</th>
+            <th>Order Type</th>
+            <th>Market</th>
+            <th>Price</th>
+            <th>Volume</th>
+            <th>Cost</th>
+        </tr>
+    </thead>
+</table>
+{:else}
+  <p class="loading">loading...</p>
+{/if}
+
+{/if}
 

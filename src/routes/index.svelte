@@ -1,46 +1,62 @@
 <style>
-	h1, figure, p {
-		text-align: center;
-		margin: 0 auto;
-	}
 
-	h1 {
-		font-size: 2.8em;
-		text-transform: uppercase;
-		font-weight: 700;
-		margin: 0 0 0.5em 0;
-	}
-
-	figure {
-		margin: 0 0 1em 0;
-	}
-
-	img {
-		width: 100%;
-		max-width: 400px;
-		margin: 0 0 1em 0;
-	}
-
-	p {
-		margin: 1em auto;
-	}
-
-	@media (min-width: 480px) {
-		h1 {
-			font-size: 4em;
-		}
-	}
 </style>
 
 <svelte:head>
 	<title>Sapper project template</title>
 </svelte:head>
 
-<h1>Great success!</h1>
+<script>
+    import { onMount } from "svelte";
+    //import { owner_name } from '../store.js'
 
-<figure>
-	<img alt='Borat' src='great-success.png'>
-	<figcaption>HIGH FIVE!</figcaption>
-</figure>
+    let balances;
+    let owner_id;
+    let owner_name;
 
-<p><strong>Try editing this file (src/routes/index.svelte) to test live reloading.</strong></p>
+
+    onMount(async () => {
+
+        owner_id = window.localStorage.getItem('owner_id');
+        owner_name = window.localStorage.getItem('owner_name');
+
+        fetch(`/api/asset`)
+        .then(r => r.json())
+        .then(data => {
+            balances = data;
+        });
+    })
+
+</script>
+
+<h1>Balances for {owner_name}</h1>
+
+
+{#if balances}
+<table>
+  <thead>
+    <tr>
+      <th>Asset</th>
+      <th>Amount</th>
+      <th>Price</th>
+      <th>24H Chg</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#each balances as o }
+    <tr>
+      <td><i class="{o.icon} fa-2x fa-fw"></i> {o.name} ({o.symbol})</td>
+      <td>0</td>
+      <td>$1299</td>
+      <td>+ 4.5%</td>
+      <td>$0</td>
+    </tr>
+    {/each}
+  </tbody>
+</table>
+{:else}
+  <p class="loading">loading...</p>
+{/if}
+
+

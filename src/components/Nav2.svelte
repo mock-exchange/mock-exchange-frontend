@@ -38,7 +38,7 @@
             </li>
 
             <li class='{segment === "trade" ? "active" : undefined}'><a href="trade/BTCUSD">Trade</a></li>
-            <li class='{segment === "account" ? "active" : undefined}'><a href="account">Account</a></li>
+            <li class='{segment === "account" ? "active" : undefined}'><a href="account">History</a></li>
             <li class='{segment === "market" ? "active" : undefined}'><a href="market">Markets</a></li>
         </ul>
 
@@ -56,7 +56,7 @@
         <a href="#!" style="color:black;"><i class="material-icons left">repeat</i>MOCKEX</a>
     </li>
     <li><a href="trade/BTCUSD">Trade</a></li>
-    <li><a href="account">Account</a></li>
+    <li><a href="account">History</a></li>
     <li><a href="market">Markets</a></li>
     <li><a href="owner"><i class="material-icons left">person</i>{$owner_name}</a></li>
 </ul>

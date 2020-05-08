@@ -75,6 +75,9 @@
     onMount(async () => {
         console.log("trade.svelte module onMount");
 
+        var elems = document.querySelectorAll('.tabs');
+        var instance = M.Tabs.init(elems);
+
         makeChart('chart');
     })
 
@@ -126,7 +129,15 @@
     border: 0px solid black;
 }
 .trade_topbar {
-    border: 1px solid gray;
+    margin: 1em 0;
+}
+.trade_topbar .card-panel {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.trade_topbar .card-panel > div {
+    text-align: center;
 }
 
 .columns {
@@ -135,66 +146,70 @@
     margin: 1em;
 
 }
+.fuck > div {
+}
+.rightside {
+    padding-top: 1em;
+}
+
 </style>
+<div class="fuck row">
+  <div class="col s9">
+
+
 
 <div class="trade_topbar">
 
-    <div use:Anchor bind:this={anchor2}>
-      <Button on:click={() => menu2.setOpen(true)}>Market: {market}</Button>
-      <Menu bind:this={menu2} anchor={false} bind:anchorElement={anchor2} anchorCorner="BOTTOM_LEFT">
-        <List>
-          {#each markets as m }
-          <Item on:SMUI:action={() => goto(`/trade/${m.name}`)}>
-            <Text>
-              <PrimaryText>{m.name}</PrimaryText>
-            </Text>
-          </Item>
-          {/each}
-        </List>
-      </Menu>
+    <div class="card-panel z-depth-0">
+        <div>
+            <div use:Anchor bind:this={anchor2}>
+              <Button on:click={() => menu2.setOpen(true)}>{market}</Button>
+              <Menu bind:this={menu2} anchor={false} bind:anchorElement={anchor2} anchorCorner="BOTTOM_LEFT">
+                <List>
+                  {#each markets as m }
+                  <Item on:SMUI:action={() => goto(`/trade/${m.name}`)}>
+                    <Text>
+                      <PrimaryText>{m.name}</PrimaryText>
+                    </Text>
+                  </Item>
+                  {/each}
+                </List>
+              </Menu>
+            </div>
+        </div>
+
+        <div>
+        <div class="card-title grey-text text-darken-4">$9,111</div>
+        <div class="grey-text">Last</div>
+        </div>
+
+        <div>
+        <div class="card-title grey-text text-darken-4">$10,499</div>
+        <div class="grey-text">High</div>
+        </div>
+
+        <div>
+        <div class="card-title grey-text text-darken-4">$9,349</div>
+        <div class="grey-text">Low</div>
+        </div>
+
+        <div>
+        <div class="card-title grey-text text-darken-4">19,349</div>
+        <div class="grey-text">24H Volume</div>
+        </div>
+
+        <div>
+        <div class="card-title grey-text text-darken-4">$9,989</div>
+        <div class="grey-text">Weighted Avg</div>
+        </div>
     </div>
-
-
-
 </div>
 
 
-<div id="chart"></div>
 
-<h2>Form to submit order</h2>
+    <div id="chart"></div>
 
-<div class="columns add_order_form">
-<form on:submit|preventDefault="{handleSubmit}">
 
-    <div>
-    <Select variant="filled" bind:value={direction} label="Direction">
-      {#each directions as d}
-        <Option value={d} selected={direction === d}>{d}</Option>
-      {/each}
-    </Select>
-
-    <Select variant="filled" bind:value={type} label="Type">
-      {#each types as t}
-        <Option value={t} selected={type === t}>{t}</Option>
-      {/each}
-    </Select>
-
-    </div>
-
-    <div>
-    <Textfield lineRipple={false} bind:value={valuePrice} label="Price" input$aria-controls="helper-text-price" input$aria-describedby="helper-text-price" />
-    </div>
-
-    <div>
-    <Textfield lineRipple={false} bind:value={valueAmount} label="Amount" input$aria-controls="helper-text-amount" input$aria-describedby="helper-text-amount" />
-    </div>
-
-    <div>
-    <Button variant="raised" type="submit">Submit Order</Button>
-    </div>
-
-</form>
-</div>
 
 
 <h2>Active orders</h2>
@@ -233,5 +248,46 @@
 {:else}
   <p class="loading">loading...</p>
 {/if}
+
+
+
+
+  </div>
+  <div class="col m3 rightside">
+    <div class="row">
+      <ul class="tabs tabs-fixed-width">
+        <li class="tab"><a href="#order_buy" class="green-text">Buy</a></li>
+        <li class="tab"><a href="#order_sell" class="active red-text">Sell</a></li>
+      </ul>
+    </div>
+    <div class="row">
+        <div id="order_buy" class="col s12">Buy order form</div>
+        <div id="order_sell" class="col s12">Sell order form</div>
+    </div>
+    <div class="row">
+        <div class="input-field col s12">
+          <input id="price" type="text" class="validate">
+          <label for="price">Price</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-field col s12">
+          <input id="amount" type="text" class="validate">
+          <label for="amount">Amount</label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="input-field col s12">
+          <input id="total" type="text" class="validate">
+          <label for="total">Total</label>
+        </div>
+    </div>
+
+
+    <div>
+        <button class="btn green col s12">Place buy order</button>
+    </div>
+  </div>
+</div>
 
 
