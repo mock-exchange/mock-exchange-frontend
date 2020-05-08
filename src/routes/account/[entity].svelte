@@ -4,7 +4,12 @@
 
 <script>
     import { onMount } from "svelte";
-    import { owner_name } from '../store.js'
+    import { owner_name } from '../../store.js'
+
+    import { goto, stores } from '@sapper/app';
+
+    const { page } = stores();
+
 
     import DataTable, {Head, Body, Row, Cell} from '@smui/data-table';
     import Tab, {Icon, Label} from '@smui/tab';
@@ -28,6 +33,19 @@
 
     let active = 'Ledger'
 
+    let entities = ['Ledger','Orders','Trades'];
+    let entity;
+
+
+    // This runs when the route changes
+    $: if (process.browser) {
+        entity = $page.params.entity
+        console.log('process.browser  $page.params.entity:'+entity);
+
+    }
+
+
+
 </script>
 
 <style>
@@ -44,19 +62,13 @@ a.btn-small {
 
 </style>
 
-<div class="button_row">
-    {#each ['Ledger', 'Orders', 'Trades'] as tab}
-        <Button class="asscheese" on:click={() => active = tab} ripple={false} variant="{active === tab ? 'unelevated' : 'outlined'}" color="{active === tab ? 'primary' : ''}"><Label>{tab}</Label></Button>
-    {/each}
-</div>
-
 <p>
 Active: {active}
 </p>
 
 <div>
-    {#each ['Ledger', 'Orders', 'Trades'] as tab}
-        <a class="{active === tab ? 'btn-small blue' : 'btn-small grey lighten-1'}" on:click={() => active = tab}>{tab}</a>
+    {#each entities as tab}
+        <a class="{entity === tab ? 'btn-small blue' : 'btn-small grey lighten-1'}" on:click={() => goto(`/account/${tab}`)}>{tab}</a>
     {/each}
 </div>
 
