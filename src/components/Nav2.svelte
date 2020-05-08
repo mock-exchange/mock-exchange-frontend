@@ -9,6 +9,13 @@
         console.log("init nav..");
         owner_name.set(window.localStorage.getItem('owner_name'));
 
+        //document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded');
+            var elems = document.querySelectorAll('.sidenav');
+            console.log('elems:',elems);
+            var instances = M.Sidenav.init(elems);
+        //});
+
     })
 
 </script>
@@ -24,6 +31,7 @@
             <img src="/logo.png" alt="Mock Exchange Logo" />
         </a>
         -->
+        <a href="" data-target="mobile-menu" class="sidenav-trigger"><i class="material-icons">menu</i></a>
         <ul class="left hide-on-med-and-down">
             <li>
             <a href="#!" style="color:black;"><i class="material-icons left">repeat</i>MOCKEX</a>
@@ -42,4 +50,14 @@
 
     </div>
 </nav>
+
+<ul class="sidenav" id="mobile-menu">
+    <li>
+        <a href="#!" style="color:black;"><i class="material-icons left">repeat</i>MOCKEX</a>
+    </li>
+    <li><a href="trade/BTCUSD">Trade</a></li>
+    <li><a href="account">Account</a></li>
+    <li><a href="market">Markets</a></li>
+    <li><a href="owner"><i class="material-icons left">person</i>{$owner_name}</a></li>
+</ul>
 

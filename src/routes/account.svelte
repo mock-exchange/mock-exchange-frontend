@@ -37,6 +37,11 @@
     margin: 1em;
 }
 
+a.btn-small {
+    margin: 0 1em;
+}
+
+
 </style>
 
 <div class="button_row">
@@ -48,6 +53,12 @@
 <p>
 Active: {active}
 </p>
+
+<div>
+    {#each ['Ledger', 'Orders', 'Trades'] as tab}
+        <a class="{active === tab ? 'btn-small blue' : 'btn-small grey lighten-1'}" on:click={() => active = tab}>{tab}</a>
+    {/each}
+</div>
 
 <h2>Orders</h2>
 

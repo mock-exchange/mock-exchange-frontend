@@ -28,7 +28,7 @@
         console.log("form:",form);
         var q = document.forms.search_form.elements['q'].value;
         console.log("q:"+q);
-        fetch(`/api/owner?name=${q}`)
+        fetch(`/api/owner?q=${q}`)
         .then(r => r.json())
         .then(data => {
             owners = data;
