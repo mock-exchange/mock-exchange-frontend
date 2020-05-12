@@ -6,6 +6,7 @@
     console.log("trade.svelte module init part");
 
     import { format } from 'date-fns'
+    import Chart from "chart.js";
 
     import { goto, stores } from '@sapper/app';
 
@@ -71,19 +72,33 @@
 
     let orders;
     let active_orders;
+    let trades;
 
+    let book_chart;
 
     let owner_id;
     let side = 'buy'
+
+
+    let red = 'rgba(228, 78, 93, 1)';
+    let green = 'rgba(95, 186, 137, 1)';
 
     onMount(async () => {
         console.log("trade.svelte module onMount");
 
         var elems = document.querySelectorAll('.tabs');
         var instance = M.Tabs.init(elems);
+        
+        // Active
+        window.addEventListener('focus', startTimer);
+
+        // Inactive
+        window.addEventListener('blur', stopTimer);
+
 
         makeChart('chart');
     })
+    let myInterval;
 
     // This runs when the route changes
     $: if (process.browser) {
@@ -111,6 +126,132 @@
         .then(r => r.json())
         .then(data => {
             updateChart(data);
+        });
+
+        startTimer()
+
+        //renderChart()
+    }
+
+    function fetchChart() {
+        fetch(`/api/book?market=${markets_idx[market]}`)
+        .then(r => r.json())
+        .then(data => {
+            book_chart = {}
+            var prices = []
+            var amounts = []
+            var sell_amounts = []
+            data.forEach(element => {
+                prices.push(element['price'])
+
+                var buy = 0;
+                var sell = 0;
+                if (element['side'] === 'buy'){
+                    buy = element['total']
+                    sell = 0
+                }
+                else { // sell
+                    buy = 0
+                    sell = element['total']
+                }
+                amounts.push(buy);
+                sell_amounts.push(sell);
+            });
+            book_chart = {
+                labels: prices,
+                datasets: [{
+                    label: "Buy Amounts",
+                    backgroundColor: green,
+                    borderColor: green,
+                    borderWidth: 0,
+                    data: amounts
+                },
+                {
+                    label: "Sell Amounts",
+                    backgroundColor: red,
+                    borderColor: red,
+                    borderWidth: 0,
+                    data: sell_amounts
+                }]
+            }
+            renderChart()
+        });
+
+
+    }
+
+function abbreviateNumber(value) {
+  let newValue = value;
+  const suffixes = ["", "K", "M", "B","T"];
+  let suffixNum = 0;
+  while (newValue >= 1000) {
+    newValue /= 1000;
+    suffixNum++;
+  }
+
+  newValue = newValue.toPrecision(3);
+
+  newValue += suffixes[suffixNum];
+  return newValue;
+}
+
+  function renderChart() {
+
+
+    var ctx = document.getElementById("myChart").getContext("2d");
+    var chart = new Chart(ctx, {
+      type: "line",
+      data: book_chart,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: { display: false },
+        elements: {
+            point: {
+                radius: 0
+            }
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    callback: function(value, index, values) {
+                        return abbreviateNumber(value);
+                    }
+                }
+            }],
+            xAxes: [{
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 10,
+                    maxRotation: 0
+                }
+            }]
+        }
+      }
+    });
+  }
+
+    // Start timer
+    function startTimer() {
+        console.log('focus startTime()');
+        fetchTrades()
+        myInterval = setInterval(() => { fetchTrades() }, 5000);
+    }
+
+    // Stop timer
+    function stopTimer() {
+        console.log('stopTimer');
+        window.clearInterval(myInterval);
+    }
+
+
+    function fetchTrades() {
+        console.log('fetchTrades()')
+        // &owner=${owner_id}
+        fetch(`/api/trade?order=id&market=${markets_idx[market]}`)
+        .then(r => r.json())
+        .then(data => {
+            trades = data;
         });
     }
 
@@ -271,10 +412,12 @@
 
     <div id="chart"></div>
 
+<button on:click={() => fetchChart() }>Render Chart</button>
+<div class="chart-container" style="border:1px dotted black; position: relative; height:150px; width:100%">
+    <canvas id="myChart"></canvas>
+</div>
 
-
-
-<h2>Active orders</h2>
+<h2>Open Orders</h2>
 
 {#if active_orders}
 <table class="striped">
@@ -296,7 +439,12 @@
     <tr>
       <td>{ o.id.toString().padStart(8, '0') }</td>
       <td>{ format(Date.parse(o.created), 'yyyy-mm-dd hh:mm:ss aaa') }</td>
-      <td>{o.direction}/{o.type}</td>
+      <td>
+        <span class="badge white-text darken-2"
+          class:red={o.direction === 'sell'}
+          class:green={o.direction === 'buy'}
+        >{o.type}</span>
+      </td>
       <td>{o.market.name}</td>
       <td class="right-align">{ numberFormat2.format(o.price) }</td>
       <td>
@@ -317,7 +465,6 @@
 
 
 
-
   </div>
   <div class="col m3 rightside">
     <form name="order_form" on:submit|preventDefault="{handleOrderSubmit}">
@@ -334,10 +481,6 @@
             class:active={side === 'sell'}
           >Sell</a></li>
       </ul>
-    </div>
-    <div class="row">
-        <div id="order_buy" class="col s12">Buy order form</div>
-        <div id="order_sell" class="col s12">Sell order form</div>
     </div>
     <div class="row">
         <div class="right-align col s12">
@@ -380,6 +523,36 @@
         >Place {side} order</button>
     </div>
     </form>
+
+<h2>Trade History</h2>
+
+{#if trades}
+<table class="striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Amt</th>
+      <th>Price</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#each trades as o }
+    <tr>
+      <td>{ o.id }</td>
+      <td>{ o.amount }</td>
+      <td>{ o.price }</td>
+      <td>{ format(Date.parse(o.created), 'hh:mm:ss aaa') }</td>
+    </tr>
+    {/each}
+  </tbody>
+</table>
+{:else}
+  <p class="loading">loading...</p>
+{/if}
+
+
+
 
 
   </div>

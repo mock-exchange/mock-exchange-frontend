@@ -104,7 +104,7 @@ Active: {active}
     {#each active_orders as o }
     <tr>
       <td>{o.id}</td>
-      <td>{o.market}</td>
+      <td>{o.market.name}</td>
       <td>{o.type}</td>
       <td>{o.direction}</td>
       <td>{o.price}</td>
