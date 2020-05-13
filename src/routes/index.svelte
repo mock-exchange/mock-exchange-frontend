@@ -3,7 +3,7 @@
 </style>
 
 <svelte:head>
-	<title>Sapper project template</title>
+    <title>Mock Exchange</title>
 </svelte:head>
 
 <script>
@@ -23,7 +23,7 @@
         fetch(`/api/asset`)
         .then(r => r.json())
         .then(data => {
-            balances = data;
+            balances = data.results;
         });
     })
 

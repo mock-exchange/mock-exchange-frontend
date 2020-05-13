@@ -14,12 +14,12 @@
         fetch(`/api/market`)
         .then(r => r.json())
         .then(data => {
-            markets = data;
+            markets = data.results;
         });
         fetch(`/api/asset`)
         .then(r => r.json())
         .then(data => {
-            assets = data;
+            assets = data.results;
         });
 
     })

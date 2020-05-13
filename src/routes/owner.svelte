@@ -12,7 +12,7 @@
         await fetch(`/api/owner`)
         .then(r => r.json())
         .then(data => {
-            owners = data;
+            owners = data.results;
         });
     })
 
@@ -26,12 +26,12 @@
     function handleSearch(form) {
         console.log("handleSearch()");
         console.log("form:",form);
-        var q = document.forms.search_form.elements['q'].value;
+        var q = '%' + document.forms.search_form.elements['q'].value + '%';
         console.log("q:"+q);
-        fetch(`/api/owner?q=${q}`)
+        fetch(`/api/owner?name__like=${q}`)
         .then(r => r.json())
         .then(data => {
-            owners = data;
+            owners = data.results;
         });
 
     }

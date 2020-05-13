@@ -112,13 +112,13 @@
         fetch(`/api/order?status__in=new,open&owner=${owner_id}`)
         .then(r => r.json())
         .then(data => {
-            active_orders = data;
+            active_orders = data.results;
         });
 
         fetch(`/api/order?owner=${owner_id}`)
         .then(r => r.json())
         .then(data => {
-            orders = data;
+            orders = data.results;
         });
 
         
@@ -251,7 +251,7 @@ function abbreviateNumber(value) {
         fetch(`/api/trade?order=id&market=${markets_idx[market]}`)
         .then(r => r.json())
         .then(data => {
-            trades = data;
+            trades = data.results;
         });
     }
 
