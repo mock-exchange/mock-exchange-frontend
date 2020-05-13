@@ -39,7 +39,7 @@
             </li>
 
             <li class='{segment === "trade" ? "active" : undefined}'><a href="trade/BTCUSD">Trade</a></li>
-            <li class='{segment === "account" ? "active" : undefined}'><a href="account">History</a></li>
+            <li class='{segment === "history" ? "active" : undefined}'><a href="history/order">History</a></li>
             <li class='{segment === "market" ? "active" : undefined}'><a href="market">Markets</a></li>
         </ul>
 
