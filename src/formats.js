@@ -1,8 +1,14 @@
 // Common formats
 import { format } from 'date-fns'
 
-const numberFormatUSD = new Intl.NumberFormat('en-US', {
+const currencyUSDFormat = new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD' });
+
+const percentFormat = new Intl.NumberFormat('en-US', {
+    style: 'percent', minimumFractionDigits: 1,
+    maximumFractionDigits: 1 });
+
+const numberFormat = new Intl.NumberFormat('en-US');
 
 
 export default {
@@ -19,11 +25,19 @@ export default {
     },
 
     currency_usd(value) {
-        return numberFormatUSD.format(value)
+        return currencyUSDFormat.format(value)
     },
 
     currency_btc(value) {
         return 'fix me'
+    },
+
+    percent(value) {
+        return percentFormat.format(value)
+    },
+
+    number(value) {
+        return numberFormat.format(value)
     }
 }
 

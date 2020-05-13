@@ -9,6 +9,7 @@
     import Chart from "chart.js";
 
     import { goto, stores } from '@sapper/app';
+    import formats from '../../formats.js'
 
     const { page } = stores();
 
@@ -79,6 +80,15 @@
     let owner_id;
     let side = 'buy'
 
+    let last24 = {
+        open: 0,
+        high: 0,
+        low: 0,
+        close: 0,
+        avg_price: 0,
+        volume: 0,
+        change: 0
+    };
 
     let red = 'rgba(228, 78, 93, 1)';
     let green = 'rgba(95, 186, 137, 1)';
@@ -109,24 +119,25 @@
 
         console.log('owner_id:'+owner_id);
 
-        fetch(`/api/order?status__in=new,open&owner=${owner_id}`)
+        fetch(`/api/order?status__in=new,open&owner_id=${owner_id}`)
         .then(r => r.json())
         .then(data => {
             active_orders = data.results;
         });
 
-        fetch(`/api/order?owner=${owner_id}`)
+        fetch(`/api/order?owner_id=${owner_id}`)
         .then(r => r.json())
         .then(data => {
             orders = data.results;
         });
 
         
-        fetch(`/api/ohlc?market=${markets_idx[market]}`)
+        fetch(`/api/ohlc?market_id=${markets_idx[market]}`)
         .then(r => r.json())
         .then(data => {
             updateChart(data);
         });
+
 
         startTimer()
 
@@ -134,7 +145,7 @@
     }
 
     function fetchChart() {
-        fetch(`/api/book?market=${markets_idx[market]}`)
+        fetch(`/api/book?market_id=${markets_idx[market]}`)
         .then(r => r.json())
         .then(data => {
             book_chart = {}
@@ -248,11 +259,18 @@ function abbreviateNumber(value) {
     function fetchTrades() {
         console.log('fetchTrades()')
         // &owner=${owner_id}
-        fetch(`/api/trade?order=id&market=${markets_idx[market]}`)
+        fetch(`/api/trade?order=id&market_id=${markets_idx[market]}`)
         .then(r => r.json())
         .then(data => {
             trades = data.results;
         });
+
+        fetch(`/api/last24?market_id=${markets_idx[market]}`)
+        .then(r => r.json())
+        .then(data => {
+            last24 = data;
+        });
+
     }
 
 
@@ -275,14 +293,14 @@ function abbreviateNumber(value) {
         var orderdata = {
             price: fe['price'].value,
             amount: fe['amount'].value,
-            market: 1,
-            owner: 1,
-            direction: side
+            market_id: 1,
+            owner_id: 1,
+            side: side
         }
         var formdata = {
             owner: 1,
-            action: 'ao',
-            payload: JSON.stringify(orderdata)
+            action: 'place-order',
+            body: JSON.stringify(orderdata)
         }
         fetch(`/api/event`, {
             method: 'POST',
@@ -304,9 +322,9 @@ function abbreviateNumber(value) {
             order_id: order_id
         }
         var formdata = {
-            owner: 1,
-            action: 'co',
-            payload: JSON.stringify(orderdata)
+            owner_id: 1,
+            action: 'cancel-order',
+            body: JSON.stringify(orderdata)
         }
         fetch(`/api/event`, {
             method: 'POST',
@@ -382,27 +400,22 @@ function abbreviateNumber(value) {
         </div>
 
         <div>
-        <div class="card-title grey-text text-darken-4">$9,111</div>
-        <div class="grey-text">Last</div>
+        <div class="card-title grey-text text-darken-4">{ formats.currency_usd(last24.close) }</div>
+        <div class="grey-text">Last trade price</div>
         </div>
 
         <div>
-        <div class="card-title grey-text text-darken-4">$10,499</div>
-        <div class="grey-text">High</div>
+        <div class="card-title grey-text text-darken-4">{formats.percent(last24.change)}</div>
+        <div class="grey-text">24h Price</div>
         </div>
 
         <div>
-        <div class="card-title grey-text text-darken-4">$9,349</div>
-        <div class="grey-text">Low</div>
+        <div class="card-title grey-text text-darken-4">{ formats.number(last24.volume) }</div>
+        <div class="grey-text">24h Volume</div>
         </div>
 
         <div>
-        <div class="card-title grey-text text-darken-4">19,349</div>
-        <div class="grey-text">24H Volume</div>
-        </div>
-
-        <div>
-        <div class="card-title grey-text text-darken-4">$9,989</div>
+        <div class="card-title grey-text text-darken-4">{ formats.currency_usd(last24.avg_price) }</div>
         <div class="grey-text">Weighted Avg</div>
         </div>
     </div>
