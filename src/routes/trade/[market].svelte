@@ -60,6 +60,9 @@
         'ETHUSD': 3
     };
     
+    let intervals = ['1m','5m','15m','1h','6h','1d']
+    let interval = '15m'
+
     export let market;
 
     let direction = 'buy';
@@ -132,7 +135,7 @@
         });
 
         
-        fetch(`/api/ohlc?market_id=${markets_idx[market]}`)
+        fetch(`/api/ohlc?interval=${interval}&market_id=${markets_idx[market]}`)
         .then(r => r.json())
         .then(data => {
             updateChart(data);
@@ -421,6 +424,14 @@ function abbreviateNumber(value) {
     </div>
 </div>
 
+
+{#each intervals as i }
+  {#if i === interval}
+    <button class="btn-flat btn-small blue lighten-1">{ i }</button>
+  {:else}
+    <button class="btn-flat btn-small grey lighten-1" on:click={() => interval = i}>{ i }</button>
+  {/if}
+{/each}
 
 
     <div id="chart"></div>
