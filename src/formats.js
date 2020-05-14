@@ -38,6 +38,10 @@ export default {
 
     number(value) {
         return numberFormat.format(value)
+    },
+
+    order_num(value) {
+        return value.toString().padStart(8, '0')
     }
 }
 

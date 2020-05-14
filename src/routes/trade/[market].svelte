@@ -122,7 +122,7 @@
 
         console.log('owner_id:'+owner_id);
 
-        fetch(`/api/order?status__in=new,open&owner_id=${owner_id}`)
+        fetch(`/api/order?status__in=open,partial&owner_id=${owner_id}`)
         .then(r => r.json())
         .then(data => {
             active_orders = data.results;
@@ -178,6 +178,7 @@
                     backgroundColor: green,
                     borderColor: green,
                     borderWidth: 0,
+                    steppedLine: 'after',
                     data: amounts
                 },
                 {
@@ -185,6 +186,7 @@
                     backgroundColor: red,
                     borderColor: red,
                     borderWidth: 0,
+                    steppedLine: 'before',
                     data: sell_amounts
                 }]
             }
@@ -297,12 +299,11 @@ function abbreviateNumber(value) {
             price: fe['price'].value,
             amount: fe['amount'].value,
             market_id: 1,
-            owner_id: 1,
+            owner_id: owner_id,
             side: side
         }
         var formdata = {
-            owner: 1,
-            action: 'place-order',
+            method: 'place-order',
             body: JSON.stringify(orderdata)
         }
         fetch(`/api/event`, {
@@ -322,11 +323,11 @@ function abbreviateNumber(value) {
     async function handleOrderCancel(order_id) {
         console.log("handleOrderCancel() order_id:"+order_id);
         var orderdata = {
-            order_id: order_id
+            order_id: order_id,
+            owner_id: owner_id
         }
         var formdata = {
-            owner_id: 1,
-            action: 'cancel-order',
+            method: 'cancel-order',
             body: JSON.stringify(orderdata)
         }
         fetch(`/api/event`, {
@@ -453,6 +454,7 @@ function abbreviateNumber(value) {
       <th>Market</th>
       <th class="right-align">Price</th>
       <th>Amount</th>
+      <th>Bal</th>
       <th>Cost</th>
       <th>Status</th>
       <th></th>
@@ -465,15 +467,14 @@ function abbreviateNumber(value) {
       <td>{ format(Date.parse(o.created), 'yyyy-mm-dd hh:mm:ss aaa') }</td>
       <td>
         <span class="badge white-text darken-2"
-          class:red={o.direction === 'sell'}
-          class:green={o.direction === 'buy'}
+          class:red={o.side === 'sell'}
+          class:green={o.side === 'buy'}
         >{o.type}</span>
       </td>
       <td>{o.market.name}</td>
-      <td class="right-align">{ numberFormat2.format(o.price) }</td>
-      <td>
-        {o.amount_left}/{o.amount}
-      </td>
+      <td class="right-align">{ formats.currency_usd(o.price) }</td>
+      <td>{ formats.number(o.amount) }</td>
+      <td>{ formats.number(o.balance) }</td>
       <td>0</td>
       <td>{o.status}</td>
       <td>

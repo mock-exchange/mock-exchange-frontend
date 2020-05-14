@@ -12,7 +12,7 @@
 
     import formats from '../../formats.js'
 
-    let user_id;
+    let owner_id;
     let results;
 
 
@@ -36,10 +36,10 @@
             query.per_page = 10
         }
 
-        user_id = window.localStorage.getItem('owner_id');
+        owner_id = window.localStorage.getItem('owner_id');
         var api_query = Object.assign({}, query);
-        api_query.owner = user_id
-        api_query.status__notin = 'open,partial'
+        api_query.owner_id = owner_id
+        api_query.status__notin = 'open'
 
         var qs = querystring.stringify(api_query)
 
@@ -80,23 +80,21 @@
       <th>Market</th>
       <th>Type</th>
       <th class="right-align">Price</th>
-      <th>Amt</th>
-      <th>Amt Left</th>
-      <th>Balance</th>
+      <th class="right-align">Amount</th>
+      <th class="right-align">Balance</th>
       <th class="right-align">Status</th>
     </tr>
   </thead>
   <tbody>
     {#each results as r }
     <tr>
-      <td>{ r.id }</td>
+      <td>{ formats.order_num(r.id) }</td>
       <td>{ formats.datetime(r.created) }</td>
       <td>{ r.market.name }</td>
-      <td><span class="badge white-text" class:red={r.direction == 'sell'} class:green={r.direction == 'buy'}>{r.direction }/{ r.type }</span></td>
+      <td><span class="badge white-text" class:red={r.side == 'sell'} class:green={r.side == 'buy'}>{r.side }/{ r.type }</span></td>
       <td class="right-align">{ formats.currency_usd(r.price) }</td>
-      <td>{ r.amount }</td>
-      <td>{ r.amount_left }</td>
-      <td>{ r.balance }</td>
+      <td class="right-align">{ formats.number(r.amount) }</td>
+      <td class="right-align">{ formats.number(r.balance) }</td>
       <td class="right-align">{ r.status }</td>
     </tr>
     {/each}
