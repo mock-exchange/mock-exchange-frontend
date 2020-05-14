@@ -13,12 +13,12 @@ const apiProxy = createProxyMiddleware('/api', {
 })
 
 polka() // You can also use Express
-	.use(
-		compression({ threshold: 0 }),
-		sirv('static', { dev }),
+  .use(
+    compression({ threshold: 0 }),
+    sirv('static', { dev }),
         apiProxy,
-		sapper.middleware()
-	)
-	.listen(PORT, err => {
-		if (err) console.log('error', err);
-	});
+    sapper.middleware()
+  )
+  .listen(PORT, err => {
+    if (err) console.log('error', err);
+  });

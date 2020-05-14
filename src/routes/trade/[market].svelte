@@ -1,36 +1,35 @@
 <svelte:head>
-	<title>Trade</title>
+  <title>Trade</title>
 </svelte:head>
 
 <script>
-    console.log("trade.svelte module init part");
+  import { format } from 'date-fns'
+  import Chart from "chart.js";
 
-    import { format } from 'date-fns'
-    import Chart from "chart.js";
+  import { goto, stores } from '@sapper/app';
+  import formats from '../../formats.js'
 
-    import { goto, stores } from '@sapper/app';
-    import formats from '../../formats.js'
+  const { page } = stores();
 
-    const { page } = stores();
+  const options2 = { style: 'currency', currency: 'USD' };
+  const numberFormat2 = new Intl.NumberFormat('en-US', options2);
 
-    const options2 = { style: 'currency', currency: 'USD' };
-    const numberFormat2 = new Intl.NumberFormat('en-US', options2);
+  import { onMount } from "svelte";
+  import { owner_name } from '../../store.js'
+  import { makeChart, updateChart } from '../../lightchart.js'
 
-    import { onMount } from "svelte";
-    import { owner_name } from '../../store.js'
-    import { makeChart, updateChart } from '../../lightchart.js'
+  import Button, {Group, GroupItem, Label, Icon} from '@smui/button';
+  import Card from '@smui/card';
+  import DataTable, {Head, Body, Row, Cell} from '@smui/data-table';
+  import Select, {Option} from '@smui/select';
 
-    import Button, {Group, GroupItem, Label, Icon} from '@smui/button';
-    import Card from '@smui/card';
-    import DataTable, {Head, Body, Row, Cell} from '@smui/data-table';
-    import Select, {Option} from '@smui/select';
-
-    import Textfield, {Input, Textarea} from '@smui/textfield';
-    import HelperText from '@smui/textfield/helper-text/index';
+  import Textfield, {Input, Textarea} from '@smui/textfield';
+  import HelperText from '@smui/textfield/helper-text/index';
 
   import Menu, {SelectionGroup, SelectionGroupIcon} from '@smui/menu';
   import {Anchor} from '@smui/menu-surface';
   import List, {Item, Separator, Text, PrimaryText, SecondaryText, Graphic} from '@smui/list';
+
   let menu;
   let menu2;
   let menu3;
@@ -40,180 +39,178 @@
   let selected1 = 'Red';
   let selected2 = 'Small';
 
-    let markets = [
-        {
-            name: 'BTCUSD',
-            id: 1
-        },
-        {
-            name: 'ETHBTC',
-            id: 2
-        },
-        {
-            name: 'ETHUSD',
-            id: 3
-        }
-    ];
-    let markets_idx = {
-        'BTCUSD': 1,
-        'ETHBTC': 2,
-        'ETHUSD': 3
-    };
-
-    let intervals = ['1m','5m','15m','1h','6h','1d']
-    let interval = '15m'
-
-    export let market;
-
-    let direction = 'buy';
-    let directions = ['buy', 'sell'];
-
-    let type = 'limit';
-    let types = ['limit', 'market'];
-
-    let valuePrice = '';
-    let valueAmount = '';
-
-    let orders;
-    let active_orders;
-    let trades;
-
-    let book_chart;
-
-    let owner_id;
-    let side = 'buy'
-
-    let last24 = {
-        open: 0,
-        high: 0,
-        low: 0,
-        close: 0,
-        avg_price: 0,
-        volume: 0,
-        change: 0
-    };
-
-    let red = 'rgba(228, 78, 93, 1)';
-    let green = 'rgba(95, 186, 137, 1)';
-
-    onMount(async () => {
-        console.log("trade.svelte module onMount");
-
-        var elems = document.querySelectorAll('.tabs');
-        var instance = M.Tabs.init(elems);
-
-        // Active
-        window.addEventListener('focus', startTimer);
-
-        // Inactive
-        window.addEventListener('blur', stopTimer);
-
-
-        makeChart('chart');
-    })
-    let myInterval;
-
-    // This runs when the route changes
-    $: if (process.browser) {
-        market = $page.params.market
-        console.log('process.browser  $page.params.market:'+market);
-
-        owner_id = window.localStorage.getItem('owner_id');
-
-        console.log('owner_id:'+owner_id);
-
-        fetch(`/api/order?status__in=open,partial&owner_id=${owner_id}`)
-        .then(r => r.json())
-        .then(data => {
-            active_orders = data.results;
-        });
-
-        fetch(`/api/order?owner_id=${owner_id}`)
-        .then(r => r.json())
-        .then(data => {
-            orders = data.results;
-        });
-
-
-        fetch(`/api/ohlc?interval=${interval}&market_id=${markets_idx[market]}`)
-        .then(r => r.json())
-        .then(data => {
-            updateChart(data);
-        });
-
-
-        startTimer()
-
-        //renderChart()
+  let markets = [
+    {
+      name: 'BTCUSD',
+      id: 1
+    },
+    {
+      name: 'ETHBTC',
+      id: 2
+    },
+    {
+      name: 'ETHUSD',
+      id: 3
     }
+  ];
+  let markets_idx = {
+    'BTCUSD': 1,
+    'ETHBTC': 2,
+    'ETHUSD': 3
+  };
 
-    function fetchChart() {
-        fetch(`/api/book?market_id=${markets_idx[market]}`)
-        .then(r => r.json())
-        .then(data => {
-            book_chart = {}
-            var prices = []
-            var amounts = []
-            var sell_amounts = []
-            data.forEach(element => {
-                prices.push(element['price'])
+  let intervals = ['1m','5m','15m','1h','6h','1d']
+  let interval = '15m'
 
-                var buy = 0;
-                var sell = 0;
-                if (element['side'] === 'buy'){
-                    buy = element['total']
-                    sell = 0
-                }
-                else { // sell
-                    buy = 0
-                    sell = element['total']
-                }
-                amounts.push(buy);
-                sell_amounts.push(sell);
-            });
-            book_chart = {
-                labels: prices,
-                datasets: [{
-                    label: "Buy Amounts",
-                    backgroundColor: green,
-                    borderColor: green,
-                    borderWidth: 0,
-                    steppedLine: 'after',
-                    data: amounts
-                },
-                {
-                    label: "Sell Amounts",
-                    backgroundColor: red,
-                    borderColor: red,
-                    borderWidth: 0,
-                    steppedLine: 'before',
-                    data: sell_amounts
-                }]
-            }
-            renderChart()
-        });
+  export let market;
+
+  let direction = 'buy';
+  let directions = ['buy', 'sell'];
+
+  let type = 'limit';
+  let types = ['limit', 'market'];
+
+  let valuePrice = '';
+  let valueAmount = '';
+
+  let orders;
+  let active_orders;
+  let trades;
+
+  let book_chart;
+
+  let owner_id;
+  let side = 'buy'
+
+  let last24 = {
+    open: 0,
+    high: 0,
+    low: 0,
+    close: 0,
+    avg_price: 0,
+    volume: 0,
+    change: 0
+  };
+
+  let red = 'rgba(228, 78, 93, 1)';
+  let green = 'rgba(95, 186, 137, 1)';
+
+  onMount(async () => {
+    console.log("trade.svelte module onMount");
+
+    var elems = document.querySelectorAll('.tabs');
+    var instance = M.Tabs.init(elems);
+
+    // Active
+    window.addEventListener('focus', startTimer);
+
+    // Inactive
+    window.addEventListener('blur', stopTimer);
 
 
-    }
+    makeChart('chart');
+  })
+  let myInterval;
 
-function abbreviateNumber(value) {
-  let newValue = value;
-  const suffixes = ["", "K", "M", "B","T"];
-  let suffixNum = 0;
-  while (newValue >= 1000) {
-    newValue /= 1000;
-    suffixNum++;
+  // This runs when the route changes
+  $: if (process.browser) {
+    market = $page.params.market
+    console.log('process.browser  $page.params.market:'+market);
+
+    owner_id = window.localStorage.getItem('owner_id');
+
+    console.log('owner_id:'+owner_id);
+
+    fetch(`/api/order?status__in=open,partial&owner_id=${owner_id}`)
+    .then(r => r.json())
+    .then(data => {
+      active_orders = data.results;
+    });
+
+    fetch(`/api/order?owner_id=${owner_id}`)
+    .then(r => r.json())
+    .then(data => {
+      orders = data.results;
+    });
+
+
+    fetch(`/api/ohlc?interval=${interval}&market_id=${markets_idx[market]}`)
+    .then(r => r.json())
+    .then(data => {
+      updateChart(data);
+    });
+
+
+    startTimer()
+
+    //renderChart()
   }
 
-  newValue = newValue.toPrecision(3);
+  function fetchChart() {
+    fetch(`/api/book?market_id=${markets_idx[market]}`)
+    .then(r => r.json())
+    .then(data => {
+      book_chart = {}
+      var prices = []
+      var amounts = []
+      var sell_amounts = []
+      data.forEach(element => {
+        prices.push(element['price'])
 
-  newValue += suffixes[suffixNum];
-  return newValue;
-}
+        var buy = 0;
+        var sell = 0;
+        if (element['side'] === 'buy'){
+          buy = element['total']
+          sell = 0
+        }
+        else { // sell
+          buy = 0
+          sell = element['total']
+        }
+        amounts.push(buy);
+        sell_amounts.push(sell);
+      });
+      book_chart = {
+        labels: prices,
+        datasets: [{
+          label: "Buy Amounts",
+          backgroundColor: green,
+          borderColor: green,
+          borderWidth: 0,
+          steppedLine: 'after',
+          data: amounts
+        },
+        {
+          label: "Sell Amounts",
+          backgroundColor: red,
+          borderColor: red,
+          borderWidth: 0,
+          steppedLine: 'before',
+          data: sell_amounts
+        }]
+      }
+      renderChart()
+    });
+
+
+  }
+
+  function abbreviateNumber(value) {
+    let newValue = value;
+    const suffixes = ["", "K", "M", "B","T"];
+    let suffixNum = 0;
+    while (newValue >= 1000) {
+      newValue /= 1000;
+      suffixNum++;
+    }
+
+    newValue = newValue.toPrecision(3);
+
+    newValue += suffixes[suffixNum];
+    return newValue;
+  }
 
   function renderChart() {
-
-
     var ctx = document.getElementById("myChart").getContext("2d");
     var chart = new Chart(ctx, {
       type: "line",
@@ -247,103 +244,101 @@ function abbreviateNumber(value) {
     });
   }
 
-    // Start timer
-    function startTimer() {
-        console.log('focus startTime()');
-        fetchTrades()
-        //myInterval = setInterval(() => { fetchTrades() }, 5000);
+  // Start timer
+  function startTimer() {
+    console.log('focus startTime()');
+    fetchTrades()
+    //myInterval = setInterval(() => { fetchTrades() }, 5000);
+  }
+
+  // Stop timer
+  function stopTimer() {
+    console.log('stopTimer');
+    //window.clearInterval(myInterval);
+  }
+
+
+  function fetchTrades() {
+    console.log('fetchTrades()')
+    // &owner=${owner_id}
+    fetch(`/api/trade?order=id&market_id=${markets_idx[market]}`)
+    .then(r => r.json())
+    .then(data => {
+      trades = data.results;
+    });
+
+    fetch(`/api/last24?market_id=${markets_idx[market]}`)
+    .then(r => r.json())
+    .then(data => {
+      last24 = data;
+    });
+
+  }
+
+  async function handleSubmit(event) {
+    console.log('market:'+market);
+  }
+
+  async function navigateMarket(m) {
+    console.log('navigateMarket')
+    goto(`/trade/${m}`)
+    //updateChart(markets_idx[m]);
+    //console.log('market:'+market);
+  }
+
+  async function handleOrderSubmit(e) {
+    console.log("handleOrderSubmit")
+
+    var fe = document.forms.order_form.elements;
+
+    var orderdata = {
+      price: fe['price'].value,
+      amount: fe['amount'].value,
+      market_id: 1,
+      owner_id: owner_id,
+      side: side
     }
-
-    // Stop timer
-    function stopTimer() {
-        console.log('stopTimer');
-        //window.clearInterval(myInterval);
+    var formdata = {
+      method: 'place-order',
+      body: JSON.stringify(orderdata)
     }
+    fetch(`/api/event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formdata)
+    })
+    .then(r => r.json())
+    .then(data => {
+      console.log('posted! data:',data)
+    });
 
+  }
 
-    function fetchTrades() {
-        console.log('fetchTrades()')
-        // &owner=${owner_id}
-        fetch(`/api/trade?order=id&market_id=${markets_idx[market]}`)
-        .then(r => r.json())
-        .then(data => {
-            trades = data.results;
-        });
-
-        fetch(`/api/last24?market_id=${markets_idx[market]}`)
-        .then(r => r.json())
-        .then(data => {
-            last24 = data;
-        });
-
+  async function handleOrderCancel(order_id) {
+    console.log("handleOrderCancel() order_id:"+order_id);
+    var orderdata = {
+      order_id: order_id,
+      owner_id: owner_id
     }
-
-
-    async function handleSubmit(event) {
-        console.log('market:'+market);
+    var formdata = {
+      method: 'cancel-order',
+      body: JSON.stringify(orderdata)
     }
+    fetch(`/api/event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formdata)
+    })
+    .then(r => r.json())
+    .then(data => {
+      console.log('posted! data:',data)
+    });
 
-    async function navigateMarket(m) {
-        console.log('navigateMarket')
-        goto(`/trade/${m}`)
-        //updateChart(markets_idx[m]);
-        //console.log('market:'+market);
-    }
-
-    async function handleOrderSubmit(e) {
-        console.log("handleOrderSubmit")
-
-        var fe = document.forms.order_form.elements;
-
-        var orderdata = {
-            price: fe['price'].value,
-            amount: fe['amount'].value,
-            market_id: 1,
-            owner_id: owner_id,
-            side: side
-        }
-        var formdata = {
-            method: 'place-order',
-            body: JSON.stringify(orderdata)
-        }
-        fetch(`/api/event`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formdata)
-        })
-        .then(r => r.json())
-        .then(data => {
-            console.log('posted! data:',data)
-        });
-
-    }
-
-    async function handleOrderCancel(order_id) {
-        console.log("handleOrderCancel() order_id:"+order_id);
-        var orderdata = {
-            order_id: order_id,
-            owner_id: owner_id
-        }
-        var formdata = {
-            method: 'cancel-order',
-            body: JSON.stringify(orderdata)
-        }
-        fetch(`/api/event`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formdata)
-        })
-        .then(r => r.json())
-        .then(data => {
-            console.log('posted! data:',data)
-        });
-
-    }
-
+  }
 </script>
 <style>
 .add_order_form {

@@ -1,40 +1,35 @@
 <svelte:head>
-	<title>owners</title>
+  <title>owners</title>
 </svelte:head>
 
 <script>
-    import { onMount } from "svelte";
-    import { owner_name } from '../store.js'
-    let owners;
+  import { onMount } from "svelte";
+  import { owner_name } from '../store.js'
+  let owners;
 
-    onMount(async () => {
-        console.log("owners fetch");
-        await fetch(`/api/owner`)
-        .then(r => r.json())
-        .then(data => {
-            owners = data.results;
-        });
-    })
+  onMount(async () => {
+    await fetch(`/api/owner`)
+    .then(r => r.json())
+    .then(data => {
+      owners = data.results;
+    });
+  })
 
-    function handleClick(m) {
-        console.log('clicked id:'+m.id+' name:'+m.name)
-        window.localStorage.setItem('owner_id', m.id);
-        window.localStorage.setItem('owner_name', m.name);
-        owner_name.set(m.name)
-    }
+  function handleClick(m) {
+    window.localStorage.setItem('owner_id', m.id);
+    window.localStorage.setItem('owner_name', m.name);
+    owner_name.set(m.name)
+  }
 
-    function handleSearch(form) {
-        console.log("handleSearch()");
-        console.log("form:",form);
-        var q = '%' + document.forms.search_form.elements['q'].value + '%';
-        console.log("q:"+q);
-        fetch(`/api/owner?name__like=${q}`)
-        .then(r => r.json())
-        .then(data => {
-            owners = data.results;
-        });
+  function handleSearch(form) {
+    var q = '%' + document.forms.search_form.elements['q'].value + '%';
+    fetch(`/api/owner?name__like=${q}`)
+    .then(r => r.json())
+    .then(data => {
+      owners = data.results;
+    });
 
-    }
+  }
 </script>
 
 <h1>Owners</h1>

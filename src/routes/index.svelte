@@ -1,32 +1,24 @@
-<style>
-
-</style>
-
 <svelte:head>
-    <title>Mock Exchange</title>
+  <title>Mock Exchange</title>
 </svelte:head>
 
 <script>
-    import { onMount } from "svelte";
-    //import { owner_name } from '../store.js'
+  import { onMount } from "svelte";
 
-    let balances;
-    let owner_id;
-    let owner_name;
+  let balances;
+  let owner_id;
+  let owner_name;
 
+  onMount(async () => {
+    owner_id = window.localStorage.getItem('owner_id');
+    owner_name = window.localStorage.getItem('owner_name');
 
-    onMount(async () => {
-
-        owner_id = window.localStorage.getItem('owner_id');
-        owner_name = window.localStorage.getItem('owner_name');
-
-        fetch(`/api/asset`)
-        .then(r => r.json())
-        .then(data => {
-            balances = data.results;
-        });
-    })
-
+    fetch(`/api/asset`)
+    .then(r => r.json())
+    .then(data => {
+        balances = data.results;
+    });
+  })
 </script>
 
 <h1>Balances for {owner_name}</h1>

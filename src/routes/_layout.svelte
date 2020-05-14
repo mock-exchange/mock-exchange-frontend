@@ -1,21 +1,21 @@
 <script>
-    import Nav from '../components/Nav.svelte';
-    import Footer from '../components/Footer.svelte';
+  import Nav from '../components/Nav.svelte';
+  import Footer from '../components/Footer.svelte';
 
-    export let segment;
+  export let segment;
 </script>
 
 <style>
 </style>
 
 <header>
-    <Nav {segment}/>
+  <Nav {segment}/>
 </header>
 
 <main>
-    <div class="container">
-        <slot></slot>
-    </div>
+  <div class="container">
+    <slot></slot>
+  </div>
 </main>
 
 <!-- <Footer /> -->
