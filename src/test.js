@@ -49,12 +49,14 @@ export function makeChart(id) {
             mode: LightweightCharts.CrosshairMode.Normal,
         },
         priceScale: {
+            autoScale: true,
             borderColor: 'rgba(197, 203, 206, 0.8)',
             mode: LightweightCharts.PriceScaleMode.Linear,
             //mode: LightweightCharts.PriceScaleMode.Logarithmic,
 
         },
         timeScale: {
+            timeVisible: true,
             borderColor: 'rgba(197, 203, 206, 0.8)',
         },
     });

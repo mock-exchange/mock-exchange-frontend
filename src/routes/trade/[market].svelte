@@ -246,13 +246,13 @@ function abbreviateNumber(value) {
     function startTimer() {
         console.log('focus startTime()');
         fetchTrades()
-        myInterval = setInterval(() => { fetchTrades() }, 5000);
+        //myInterval = setInterval(() => { fetchTrades() }, 5000);
     }
 
     // Stop timer
     function stopTimer() {
         console.log('stopTimer');
-        window.clearInterval(myInterval);
+        //window.clearInterval(myInterval);
     }
 
 
