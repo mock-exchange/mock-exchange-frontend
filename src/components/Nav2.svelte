@@ -16,6 +16,13 @@
             var instances = M.Sidenav.init(elems);
         //});
 
+            var elems2 = document.querySelectorAll('.dropdown-trigger');
+            var instances2 = M.Dropdown.init(elems2, {
+                alignment: 'right',
+                coverTrigger: false
+            });
+
+
     })
 
 </script>
@@ -23,6 +30,13 @@
 <style>
 
 </style>
+
+<!-- Dropdown Structure -->
+<ul id="profile_dropdown" class="dropdown-content">
+  <li><a href="profile">Profile</a></li>
+  <li class="divider"></li>
+  <li><a href="logout">Logout</a></li>
+</ul>
 
 <nav>
     <div class="nav-wrapper">
@@ -44,8 +58,9 @@
         </ul>
 
         <ul class="right hide-on-med-and-down">
-            <li class='{segment === "owner" ? "active" : undefined}'>
-                <a href="owner"><i class="material-icons left">person</i>{$owner_name}</a>
+            <!-- Dropdown Trigger -->
+            <li>
+                <a class="dropdown-trigger" data-target="profile_dropdown"><i class="material-icons left">person</i>{$owner_name}<i class="material-icons right">arrow_drop_down</i></a>
             </li>
         </ul>
 
