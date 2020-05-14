@@ -18,7 +18,7 @@
 
     import { onMount } from "svelte";
     import { owner_name } from '../../store.js'
-    import { makeChart, updateChart } from '../../test.js'
+    import { makeChart, updateChart } from '../../lightchart.js'
 
     import Button, {Group, GroupItem, Label, Icon} from '@smui/button';
     import Card from '@smui/card';
@@ -59,7 +59,7 @@
         'ETHBTC': 2,
         'ETHUSD': 3
     };
-    
+
     let intervals = ['1m','5m','15m','1h','6h','1d']
     let interval = '15m'
 
@@ -101,7 +101,7 @@
 
         var elems = document.querySelectorAll('.tabs');
         var instance = M.Tabs.init(elems);
-        
+
         // Active
         window.addEventListener('focus', startTimer);
 
@@ -134,7 +134,7 @@
             orders = data.results;
         });
 
-        
+
         fetch(`/api/ohlc?interval=${interval}&market_id=${markets_idx[market]}`)
         .then(r => r.json())
         .then(data => {
@@ -282,7 +282,7 @@ function abbreviateNumber(value) {
     async function handleSubmit(event) {
         console.log('market:'+market);
     }
-    
+
     async function navigateMarket(m) {
         console.log('navigateMarket')
         goto(`/trade/${m}`)
@@ -292,7 +292,7 @@ function abbreviateNumber(value) {
 
     async function handleOrderSubmit(e) {
         console.log("handleOrderSubmit")
-        
+
         var fe = document.forms.order_form.elements;
 
         var orderdata = {
@@ -541,7 +541,7 @@ function abbreviateNumber(value) {
 
 
     <div>
-        <button 
+        <button
           class="btn col s12"
           class:red={side === 'sell'}
           class:green={side === 'buy'}
