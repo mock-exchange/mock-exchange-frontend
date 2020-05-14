@@ -35,7 +35,7 @@
 <ul id="profile_dropdown" class="dropdown-content">
   <li><a href="profile">Profile</a></li>
   <li class="divider"></li>
-  <li><a href="logout">Logout</a></li>
+  <li><a href="owner">Logout</a></li>
 </ul>
 
 <nav>

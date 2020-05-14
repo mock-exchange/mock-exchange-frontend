@@ -4,6 +4,7 @@
 
 <script>
   import { onMount } from "svelte";
+  import formats from "../formats.js";
 
   let balances;
   let owner_id;
@@ -13,10 +14,10 @@
     owner_id = window.localStorage.getItem('owner_id');
     owner_name = window.localStorage.getItem('owner_name');
 
-    fetch(`/api/asset`)
+    fetch(`/api/balance?owner_id=${owner_id}`)
     .then(r => r.json())
     .then(data => {
-        balances = data.results;
+        balances = data;
     });
   })
 </script>
@@ -29,20 +30,23 @@
   <thead>
     <tr>
       <th>Asset</th>
-      <th>Amount</th>
-      <th>Price</th>
-      <th>24H Chg</th>
-      <th>Value</th>
+      <th class="right-align">Balance</th>
+      <th class="right-align">Last Price</th>
+      <th class="right-align">Value</th>
     </tr>
   </thead>
   <tbody>
     {#each balances as o }
     <tr>
       <td><i class="{o.icon} fa-2x fa-fw"></i> {o.name} ({o.symbol})</td>
-      <td>0</td>
-      <td>$1299</td>
-      <td>+ 4.5%</td>
-      <td>$0</td>
+      <td class="right-align">{ formats.number(o.balance) }</td>
+      {#if o.symbol === 'USD'}
+        <td class="right-align">&dash;</td>
+        <td class="right-align">{ formats.currency_usd(o.balance) }</td>
+      {:else}
+        <td class="right-align">{ formats.currency_usd(o.last_price) }</td>
+        <td class="right-align">{ formats.currency_usd(o.usd_value) }</td>
+      {/if}
     </tr>
     {/each}
   </tbody>
