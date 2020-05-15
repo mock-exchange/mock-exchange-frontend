@@ -18,17 +18,6 @@
   import { owner_name } from '../../store.js'
   import { makeChart, updateChart } from '../../lightchart.js'
 
-  import Button, {Group, GroupItem, Label, Icon} from '@smui/button';
-  import Card from '@smui/card';
-  import DataTable, {Head, Body, Row, Cell} from '@smui/data-table';
-  import Select, {Option} from '@smui/select';
-
-  import Textfield, {Input, Textarea} from '@smui/textfield';
-  import HelperText from '@smui/textfield/helper-text/index';
-
-  import Menu, {SelectionGroup, SelectionGroupIcon} from '@smui/menu';
-  import {Anchor} from '@smui/menu-surface';
-  import List, {Item, Separator, Text, PrimaryText, SecondaryText, Graphic} from '@smui/list';
 
   let menu;
   let menu2;
@@ -377,20 +366,7 @@
 
     <div class="card-panel z-depth-0">
         <div>
-            <div use:Anchor bind:this={anchor2}>
-              <Button on:click={() => menu2.setOpen(true)}>{market}</Button>
-              <Menu bind:this={menu2} anchor={false} bind:anchorElement={anchor2} anchorCorner="BOTTOM_LEFT">
-                <List>
-                  {#each markets as m }
-                  <Item on:SMUI:action={() => goto(`/trade/${m.name}`)}>
-                    <Text>
-                      <PrimaryText>{m.name}</PrimaryText>
-                    </Text>
-                  </Item>
-                  {/each}
-                </List>
-              </Menu>
-            </div>
+          {market}
         </div>
 
         <div>

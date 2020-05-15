@@ -22,110 +22,110 @@ const sassOptions = {
 
 
 module.exports = {
-	client: {
-		entry: config.client.entry(),
-		output: config.client.output(),
-		resolve: { alias, extensions, mainFields },
-        devServer: {
-            proxy: {
-              '/api': 'http://localhost:5000',
-            },
+  client: {
+    entry: config.client.entry(),
+    output: config.client.output(),
+    resolve: { alias, extensions, mainFields },
+    devServer: {
+      proxy: {
+        '/api': 'http://localhost:5000',
+      },
+    },
+    module: {
+      rules: [
+        {
+          test: /\.(svelte|html)$/,
+          use: {
+            loader: 'svelte-loader',
+            options: {
+              dev,
+              hydratable: true,
+              hotReload: false // pending https://github.com/sveltejs/svelte/issues/2377
+            }
+          }
         },
-		module: {
-			rules: [
-				{
-					test: /\.(svelte|html)$/,
-					use: {
-						loader: 'svelte-loader',
-						options: {
-							dev,
-							hydratable: true,
-							hotReload: false // pending https://github.com/sveltejs/svelte/issues/2377
-						}
-					}
-				},
                 {
-					test: /\.(sa|sc|c)ss$/,
-					use: [
-						'style-loader',
-						MiniCssExtractPlugin.loader,
-						'css-loader',
-						{
-							loader: 'sass-loader',
-							options: {
-								sassOptions
-							},
-						},
-					],
-				}
-			]
-		},
-		mode,
-		plugins: [
-			// pending https://github.com/sveltejs/svelte/issues/2377
-			// dev && new webpack.HotModuleReplacementPlugin(),
-			new webpack.DefinePlugin({
-				'process.browser': true,
-				'process.env.NODE_ENV': JSON.stringify(mode)
-			}),
-            new MiniCssExtractPlugin({
-				filename: '[name].css',
-				chunkFilename: '[name].[id].css',
-			}),
-		].filter(Boolean),
-		devtool: dev && 'inline-source-map'
-	},
+          test: /\.(sa|sc|c)ss$/,
+          use: [
+            'style-loader',
+            MiniCssExtractPlugin.loader,
+            'css-loader',
+            {
+              loader: 'sass-loader',
+              options: {
+                sassOptions
+              },
+            },
+          ],
+        }
+      ]
+    },
+    mode,
+    plugins: [
+      // pending https://github.com/sveltejs/svelte/issues/2377
+      // dev && new webpack.HotModuleReplacementPlugin(),
+      new webpack.DefinePlugin({
+        'process.browser': true,
+        'process.env.NODE_ENV': JSON.stringify(mode)
+      }),
+      new MiniCssExtractPlugin({
+        filename: '[name].css',
+        chunkFilename: '[name].[id].css',
+      }),
+    ].filter(Boolean),
+    devtool: dev && 'inline-source-map'
+  },
 
-	server: {
-		entry: config.server.entry(),
-		output: config.server.output(),
-		target: 'node',
-		resolve: { alias, extensions, mainFields },
-		externals: Object.keys(pkg.dependencies).concat('encoding'),
-		module: {
-			rules: [
-				{
-					test: /\.(svelte|html)$/,
-					use: {
-						loader: 'svelte-loader',
-						options: {
-							css: false,
-							generate: 'ssr',
-							dev
-						}
-					}
-				},
+  server: {
+    entry: config.server.entry(),
+    output: config.server.output(),
+    target: 'node',
+    resolve: { alias, extensions, mainFields },
+    externals: Object.keys(pkg.dependencies).concat('encoding'),
+    module: {
+      rules: [
+        {
+          test: /\.(svelte|html)$/,
+          use: {
+            loader: 'svelte-loader',
+            options: {
+              css: false,
+              generate: 'ssr',
+              dev
+            }
+          }
+        },
                 {
-					test: /\.(sa|sc|c)ss$/,
-					use: [
-						'style-loader',
-						MiniCssExtractPlugin.loader,
-						'css-loader',
-						{
-							loader: 'sass-loader',
-							options: {
-								sassOptions
-							},
-						},
-					],
-				}
-			]
-		},
-		mode: process.env.NODE_ENV,
-        plugins: [
-            new MiniCssExtractPlugin({
-				filename: '[name].css',
-				chunkFilename: '[name].[id].css',
-			}),
-        ].filter(Boolean),
-		performance: {
-			hints: false // it doesn't matter if server.js is large
-		}
-	},
+          test: /\.(sa|sc|c)ss$/,
+          use: [
+            'style-loader',
+            MiniCssExtractPlugin.loader,
+            'css-loader',
+            {
+              loader: 'sass-loader',
+              options: {
+                sassOptions
+              },
+            },
+          ],
+        }
+      ]
+    },
+    mode: process.env.NODE_ENV,
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: '[name].css',
+        chunkFilename: '[name].[id].css',
+      }),
+    ].filter(Boolean),
+    performance: {
+      hints: false // it doesn't matter if server.js is large
+    }
+  },
 
-	serviceworker: {
-		entry: config.serviceworker.entry(),
-		output: config.serviceworker.output(),
-		mode: process.env.NODE_ENV
-	}
+  serviceworker: {
+    entry: config.serviceworker.entry(),
+    output: config.serviceworker.output(),
+    mode: process.env.NODE_ENV
+  }
 };
