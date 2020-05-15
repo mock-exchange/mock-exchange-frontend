@@ -5,12 +5,52 @@
 $buy-color: color("green", "lighten-1");
 $sell-color: color("red", "lighten-1");
 
+
+body {
+  background-color: $mex-primary-bg-color;
+}
+
+nav {
+  background-color: $mex-secondary-bg-color;
+}
+
+nav .mex-brand-logo {
+  color: $primary-color;
+}
+
 .me-buy {
   background-color: $buy-color;
 }
 
 .me-sell {
   background-color: $sell-color;
+}
+
+.mex-card-panel {
+  padding: 5px 24px;
+}
+
+.mex-title-panel {
+  background-color: $mex-secondary-bg-color;
+  font-weight: bold;
+}
+
+.mex-btn-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+}
+
+.mex-btn-group > button {
+  margin-left: .5em;
+}
+
+.mex-btn-group > button:first-child {
+  margin-left: 0;
+}
+
+.mex-btn-group-justified > button {
+  flex: 1;
 }
 
 

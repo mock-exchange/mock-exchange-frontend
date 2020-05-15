@@ -1,3 +1,14 @@
 
-$primary-color: color("blue-grey", "darken-4") !default;
+$primary-color: color("deep-orange", "base");
+$secondary-color: color("blue-grey", "darken-2");
+
+$mex-primary-bg-color: color("blue-grey", "darken-4");
+$mex-secondary-bg-color: color("blue-grey", "darken-3");
+
+//$off-black: white;
+//$off-black: color("grey", "lighten-5");
+$off-black: color("blue-grey", "lighten-5");
+
+$card-bg-color: $mex-secondary-bg-color;
+
 

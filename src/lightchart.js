@@ -34,15 +34,15 @@ export function makeChart(id) {
     width: el.offsetWidth,
     height: 300,
     layout: {
-      backgroundColor: white,
-      textColor: black,
+      backgroundColor: 'transparent',
+      textColor: 'white',
     },
     grid: {
       vertLines: {
-        color: 'rgba(197, 203, 206, 0.5)',
+        color: 'rgba(197, 203, 206, 0.2)',
       },
       horzLines: {
-        color: 'rgba(197, 203, 206, 0.5)',
+        color: 'rgba(197, 203, 206, 0.2)',
       },
     },
     crosshair: {
@@ -73,7 +73,7 @@ export function makeChart(id) {
   });
 
   volumeSeries = chart.addHistogramSeries({
-    color: '#26a69a',
+    color: '#666666',
     lineWidth: 2,
     priceFormat: {
       type: 'volume',

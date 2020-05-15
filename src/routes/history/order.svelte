@@ -85,7 +85,7 @@
       <td>{ formats.order_num(r.id) }</td>
       <td>{ formats.datetime(r.created) }</td>
       <td>{ r.market.name }</td>
-      <td><span class="badge white-text" class:red={r.side == 'sell'} class:green={r.side == 'buy'}>{r.side }/{ r.type }</span></td>
+      <td><span class="badge white-text" class:me-sell={r.side == 'sell'} class:me-buy={r.side == 'buy'}>{r.side }/{ r.type }</span></td>
       <td class="right-align">{ formats.currency_usd(r.price) }</td>
       <td class="right-align">{ formats.number(r.amount) }</td>
       <td class="right-align">{ formats.number(r.balance) }</td>

@@ -28,24 +28,13 @@
   let selected1 = 'Red';
   let selected2 = 'Small';
 
-  let markets = [
-    {
-      name: 'BTCUSD',
-      id: 1
-    },
-    {
-      name: 'ETHBTC',
-      id: 2
-    },
-    {
-      name: 'ETHUSD',
-      id: 3
+  let markets = [];
+  let markets_idx = {};
+  let this_market = {
+    name: 'undef',
+    asset: {
+      icon: 'fas fa-question'
     }
-  ];
-  let markets_idx = {
-    'BTCUSD': 1,
-    'ETHBTC': 2,
-    'ETHUSD': 3
   };
 
   let intervals = ['1m','5m','15m','1h','6h','1d']
@@ -87,8 +76,28 @@
   onMount(async () => {
     console.log("trade.svelte module onMount");
 
+    fetch(`/api/market`)
+    .then(r => r.json())
+    .then(data => {
+      console.log('handle market results')
+      markets = data.results;
+      markets.forEach(m => {
+        markets_idx[m['name']] = m['id']
+      })
+    });
+
+
+
     var elems = document.querySelectorAll('.tabs');
     var instance = M.Tabs.init(elems);
+
+    var el = document.getElementById('market_drop_trigger');
+    var instances2 = M.Dropdown.init(el, {
+      alignment: 'left',
+      coverTrigger: false,
+      constrainWidth: false
+    });
+
 
     // Active
     window.addEventListener('focus', startTimer);
@@ -104,7 +113,9 @@
   // This runs when the route changes
   $: if (process.browser) {
     market = $page.params.market
-    console.log('process.browser  $page.params.market:'+market);
+    console.log('xx process.browser  $page.params.market:'+market);
+    console.log('markets:',markets)
+    this_market = markets_idx[market]
 
     owner_id = window.localStorage.getItem('owner_id');
 
@@ -132,7 +143,7 @@
 
     startTimer()
 
-    //renderChart()
+    fetchChart()
   }
 
   function fetchChart() {
@@ -200,7 +211,7 @@
   }
 
   function renderChart() {
-    var ctx = document.getElementById("myChart").getContext("2d");
+    var ctx = document.getElementById("book_chart").getContext("2d");
     var chart = new Chart(ctx, {
       type: "line",
       data: book_chart,
@@ -215,6 +226,14 @@
         },
         scales: {
             yAxes: [{
+                position: 'right',
+                ticks: {
+                    callback: function(value, index, values) {
+                        return abbreviateNumber(value);
+                    }
+                }
+            }, {
+                position: 'left',
                 ticks: {
                     callback: function(value, index, values) {
                         return abbreviateNumber(value);
@@ -346,8 +365,7 @@
     margin: 1em;
 
 }
-.fuck > div {
-}
+
 .rightside {
     padding-top: 1em;
 }
@@ -356,128 +374,158 @@
     height: 20px;
 }
 
+.chart-container {
+  position: relative;
+  height:150px;
+  width:100%;
+}
 </style>
-<div class="fuck row">
+<div class="row">
   <div class="col s9">
 
+    <div class="row"><div class="col s12">
+      <div class="trade_topbar">
+        <div class="card-panel mex-card-panel">
+          <div>
+            <a id="market_drop_trigger" class="dropdown-trigger" data-target="market_dropdown">
+              <i class="fas fa-question fa-fw"></i>
+              {market}
+              <i class="material-icons right">arrow_drop_down</i>
+            </a>
 
+            <!-- Dropdown Structure -->
+            <ul id="market_dropdown" class="collection dropdown-content">
+              {#each markets as m }
+                <li>
+                <a href="/trade/{m.name}">
+                  <div><i class="{m.asset.icon} fa-fw"></i> {m.name}</div>
+                </a>
+                </li>
+              {/each}
+            </ul>
 
-<div class="trade_topbar">
-
-    <div class="card-panel z-depth-0">
-        <div>
-          {market}
+          </div>
+          <div>
+            <div class="card-title">{ formats.currency_usd(last24.close) }</div>
+            <div class="grey-text">Last trade price</div>
+          </div>
+          <div>
+            <div class="card-title"
+              class:red-text={last24.change < 0}
+              class:green-text={last24.change > 0}
+            >{formats.percent(last24.change)}</div>
+            <div class="grey-text">24h Price</div>
+          </div>
+          <div>
+            <div class="card-title">{ formats.number(last24.volume) }</div>
+            <div class="grey-text">24h Volume</div>
+          </div>
+          <div>
+            <div class="card-title">{ formats.currency_usd(last24.avg_price) }</div>
+            <div class="grey-text">Weighted Avg</div>
+          </div>
         </div>
+      </div>
+    </div></div>
 
-        <div>
-        <div class="card-title grey-text text-darken-4">{ formats.currency_usd(last24.close) }</div>
-        <div class="grey-text">Last trade price</div>
-        </div>
+    <div class="row"><div class="col s12">
+      <div class="mex-btn-group">
+      {#each intervals as i }
+        {#if i === interval}
+          <button class="btn-small active">{ i }</button>
+        {:else}
+          <button class="btn-small" on:click={() => interval = i}>{ i }</button>
+        {/if}
+      {/each}
+      </div>
+    </div></div>
 
-        <div>
-        <div class="card-title grey-text text-darken-4">{formats.percent(last24.change)}</div>
-        <div class="grey-text">24h Price</div>
-        </div>
+    <div class="row"><div class="col s12">
+      <div id="chart"></div>
+    </div></div>
 
-        <div>
-        <div class="card-title grey-text text-darken-4">{ formats.number(last24.volume) }</div>
-        <div class="grey-text">24h Volume</div>
-        </div>
+    <div class="row"><div class="col s12">
+      <div class="chart-container">
+        <canvas id="book_chart"></canvas>
+      </div>
+    </div></div>
 
-        <div>
-        <div class="card-title grey-text text-darken-4">{ formats.currency_usd(last24.avg_price) }</div>
-        <div class="grey-text">Weighted Avg</div>
-        </div>
-    </div>
-</div>
+    <div class="row"><div class="col s12">
+      <div class="card-panel mex-card-panel">
+        <div class="card-title">Open Orders</div>
+      </div>
 
-
-{#each intervals as i }
-  {#if i === interval}
-    <button class="btn-flat btn-small blue lighten-1">{ i }</button>
-  {:else}
-    <button class="btn-flat btn-small grey lighten-1" on:click={() => interval = i}>{ i }</button>
-  {/if}
-{/each}
-
-
-    <div id="chart"></div>
-
-<button on:click={() => fetchChart() }>Render Chart</button>
-<div class="chart-container" style="border:1px dotted black; position: relative; height:150px; width:100%">
-    <canvas id="myChart"></canvas>
-</div>
-
-<h2>Open Orders</h2>
-
-{#if active_orders}
-<table class="striped">
-  <thead>
-    <tr>
-      <th>Order</th>
-      <th>Opened</th>
-      <th>Type</th>
-      <th>Market</th>
-      <th class="right-align">Price</th>
-      <th>Amount</th>
-      <th>Bal</th>
-      <th>Cost</th>
-      <th>Status</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {#each active_orders as o }
-    <tr>
-      <td>{ o.id.toString().padStart(8, '0') }</td>
-      <td>{ format(Date.parse(o.created), 'yyyy-mm-dd hh:mm:ss aaa') }</td>
-      <td>
-        <span class="badge white-text darken-2"
-          class:red={o.side === 'sell'}
-          class:green={o.side === 'buy'}
-        >{o.type}</span>
-      </td>
-      <td>{o.market.name}</td>
-      <td class="right-align">{ formats.currency_usd(o.price) }</td>
-      <td>{ formats.number(o.amount) }</td>
-      <td>{ formats.number(o.balance) }</td>
-      <td>0</td>
-      <td>{o.status}</td>
-      <td>
-        <button on:click={() => handleOrderCancel(o.id)} class="btn-small">Cancel</button>
-      </td>
-    </tr>
-    {/each}
-  </tbody>
-</table>
-{:else}
-  <p class="loading">loading...</p>
-{/if}
-
-
+      {#if active_orders}
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Opened</th>
+            <th>Type</th>
+            <th>Market</th>
+            <th class="right-align">Price</th>
+            <th>Amount</th>
+            <th>Bal</th>
+            <th>Cost</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each active_orders as o }
+          <tr>
+            <td>{ o.id.toString().padStart(8, '0') }</td>
+            <td>{ format(Date.parse(o.created), 'yyyy-mm-dd hh:mm:ss aaa') }</td>
+            <td>
+              <span class="badge white-text darken-2"
+                class:me-sell={o.side === 'sell'}
+                class:me-buy={o.side === 'buy'}
+              >{o.type}</span>
+            </td>
+            <td>{o.market.name}</td>
+            <td class="right-align">{ formats.currency_usd(o.price) }</td>
+            <td>{ formats.number(o.amount) }</td>
+            <td>{ formats.number(o.balance) }</td>
+            <td>0</td>
+            <td>{o.status}</td>
+            <td>
+              <button on:click={() => handleOrderCancel(o.id)} class="btn-small">Cancel</button>
+            </td>
+          </tr>
+          {/each}
+        </tbody>
+      </table>
+      {:else}
+        <p class="loading">loading...</p>
+      {/if}
+    </div></div>
 
   </div>
+
   <div class="col m3 rightside">
+
+
+    <div class="row"><div class="col s12">
+
     <form name="order_form" on:submit|preventDefault="{handleOrderSubmit}">
+
     <div class="row">
-      <ul class="tabs tabs-fixed-width">
-        <li class="tab">
-          <a href="#order_buy" on:click={() => side = 'buy'}
-            class="green-text"
-            class:active={side === 'buy'}
-          >Buy</a></li>
-        <li class="tab">
-          <a href="#order_sell" on:click={() => side = 'sell'}
-            class="red-text"
-            class:active={side === 'sell'}
-          >Sell</a></li>
-      </ul>
+      <div class="col s12 mex-btn-group mex-btn-group-justified">
+        <button on:click={() => side = 'buy'}
+          class="btn"
+          class:green={side === 'buy'}
+        >Buy</button>
+        <button on:click={() => side = 'sell'}
+          class="btn"
+          class:red={side === 'sell'}
+        >Sell</button>
+      </div>
     </div>
     <div class="row">
         <div class="right-align col s12">
-            <button class="btn-small btn-flat grey white-text">Bid</button>
-            <button class="btn-small btn-flat grey white-text">Ask</button>
-            <button class="btn-small btn-flat grey white-text">Last</button>
+            <button class="btn-small">Bid</button>
+            <button class="btn-small">Ask</button>
+            <button class="btn-small">Last</button>
         </div>
 
         <div class="input-field col s12">
@@ -493,10 +541,10 @@
     </div>
     <div class="row">
         <div class="right-align col s12">
-            <button class="btn-small btn-flat grey white-text">25%</button>
-            <button class="btn-small btn-flat grey white-text">50%</button>
-            <button class="btn-small btn-flat grey white-text">75%</button>
-            <button class="btn-small btn-flat grey white-text">100%</button>
+            <button class="btn-small">25%</button>
+            <button class="btn-small">50%</button>
+            <button class="btn-small">75%</button>
+            <button class="btn-small">100%</button>
         </div>
 
         <div class="input-field col s12">
@@ -514,34 +562,36 @@
         >Place {side} order</button>
     </div>
     </form>
+    </div></div>
 
-<h2>Trade History</h2>
+    <div class="row"><div class="col s12">
+      <div class="card-panel mex-card-panel">
+        <div class="card-title">Trade History</div>
+      </div>
 
-{#if trades}
-<table class="striped">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Amt</th>
-      <th>Price</th>
-      <th>Time</th>
-    </tr>
-  </thead>
-  <tbody>
-    {#each trades as o }
-    <tr>
-      <td>{ o.id }</td>
-      <td>{ o.amount }</td>
-      <td>{ o.price }</td>
-      <td>{ format(Date.parse(o.created), 'hh:mm:ss aaa') }</td>
-    </tr>
-    {/each}
-  </tbody>
-</table>
-{:else}
-  <p class="loading">loading...</p>
-{/if}
-
+      {#if trades}
+      <table>
+        <thead>
+          <tr>
+            <th>Amt</th>
+            <th>Price</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each trades as o }
+          <tr>
+            <td>{ formats.number(o.amount) }</td>
+            <td>{ formats.currency_usd(o.price) }</td>
+            <td>{ formats.time(o.created) }</td>
+          </tr>
+          {/each}
+        </tbody>
+      </table>
+      {:else}
+        <p class="loading">loading...</p>
+      {/if}
+    </div></div>
 
 
 
