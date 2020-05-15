@@ -43,9 +43,7 @@ export default {
         preferBuiltins: false,
         dedupe: ['svelte']
       }),
-      commonjs({
-        preferBuiltins: false
-      }),
+      commonjs(),
 
       legacy && babel({
         extensions: ['.js', '.mjs', '.html', '.svelte'],
@@ -89,9 +87,7 @@ export default {
         preferBuiltins: false,
         dedupe: ['svelte']
       }),
-      commonjs({
-        preferBuiltins: false
-      })
+      commonjs()
     ],
     external: Object.keys(pkg.dependencies).concat(
       require('module').builtinModules || Object.keys(process.binding('natives'))
