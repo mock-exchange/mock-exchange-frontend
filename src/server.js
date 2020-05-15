@@ -16,7 +16,7 @@ polka() // You can also use Express
   .use(
     compression({ threshold: 0 }),
     sirv('static', { dev }),
-        apiProxy,
+    apiProxy,
     sapper.middleware()
   )
   .listen(PORT, err => {
