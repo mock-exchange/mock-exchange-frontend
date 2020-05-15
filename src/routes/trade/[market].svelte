@@ -341,9 +341,6 @@
   }
 </script>
 <style>
-.add_order_form {
-    border: 0px solid black;
-}
 .trade_topbar {
     margin: 1em 0;
 }
@@ -356,8 +353,6 @@
     text-align: center;
 }
 
-.columns {
-}
 .columns > * {
     margin: 1em;
 
