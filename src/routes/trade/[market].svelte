@@ -269,7 +269,7 @@
   function fetchTrades() {
     console.log('fetchTrades()')
     // &owner=${owner_id}
-    fetch(`/api/trade?order=id&market_id=${markets_idx[market]}`)
+    fetch(`/api/trade?per_page=30&order=id&market_id=${markets_idx[market]}`)
     .then(r => r.json())
     .then(data => {
       trades = data.results;
@@ -349,6 +349,10 @@
   }
 </script>
 <style>
+td, th {
+  padding:0;
+}
+
 .trade_topbar {
     margin: 1em 0;
 }
@@ -357,9 +361,12 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    padding: 5px 24px 5px 0;
+    box-shadow: none;
+    background-color: transparent;
 }
 .trade_topbar .card-panel > div {
-    text-align: center;
+  text-align: center;
 }
 
 .columns > * {
