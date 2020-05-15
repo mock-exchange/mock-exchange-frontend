@@ -356,6 +356,7 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
 }
 .trade_topbar .card-panel > div {
     text-align: center;
@@ -387,8 +388,8 @@
       <div class="trade_topbar">
         <div class="card-panel mex-card-panel">
           <div>
-            <a id="market_drop_trigger" class="dropdown-trigger" data-target="market_dropdown">
-              <i class="fas fa-question fa-fw"></i>
+            <a id="market_drop_trigger" class="btn z-depth-0 dropdown-trigger" data-target="market_dropdown">
+              <i class="fab fa-bitcoin fa-fw"></i>
               {market}
               <i class="material-icons right">arrow_drop_down</i>
             </a>
