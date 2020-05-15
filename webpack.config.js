@@ -12,10 +12,19 @@ const mainFields = ['svelte', 'module', 'browser', 'main'];
 
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 //const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const sveltePreprocess from 'svelte-preprocess';
+
+const preprocess = sveltePreprocess({
+  scss: {
+    includePaths: ['src'],
+  },
+  postcss: {
+    plugins: [require('autoprefixer')],
+  },
+});
 
 const sassOptions = {
   includePaths: [
-    './theme',
     './node_modules',
   ]
 };
@@ -44,7 +53,7 @@ module.exports = {
             }
           }
         },
-                {
+        {
           test: /\.(sa|sc|c)ss$/,
           use: [
             'style-loader',

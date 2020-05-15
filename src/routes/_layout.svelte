@@ -5,7 +5,8 @@
   export let segment;
 </script>
 
-<style>
+<style lang="scss" global>
+  @import "../style/global.scss";
 </style>
 
 <header>
