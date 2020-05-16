@@ -475,9 +475,9 @@ td, th {
             <th>Type</th>
             <th>Market</th>
             <th class="right-align">Price</th>
-            <th>Amount</th>
-            <th>Bal</th>
-            <th>Cost</th>
+            <th class="right-align">Amount</th>
+            <th class="right-align">Bal</th>
+            <th class="right-align">Cost</th>
             <th>Status</th>
             <th></th>
           </tr>
@@ -495,11 +495,11 @@ td, th {
             </td>
             <td>{o.market.name}</td>
             <td class="right-align">{ formats.currency_usd(o.price) }</td>
-            <td>{ formats.number(o.amount) }</td>
-            <td>{ formats.number(o.balance) }</td>
-            <td>0</td>
+            <td class="right-align">{ formats.number(o.amount) }</td>
+            <td class="right-align">{ formats.number(o.balance) }</td>
+            <td class="right-align">&dash;</td>
             <td>{o.status}</td>
-            <td>
+            <td class="right-align">
               <button on:click={() => handleOrderCancel(o.id)} class="btn-small">Cancel</button>
             </td>
           </tr>
@@ -586,7 +586,7 @@ td, th {
           <tr>
             <th>Amt</th>
             <th>Price</th>
-            <th>Time</th>
+            <th class="right-align">Time</th>
           </tr>
         </thead>
         <tbody>
@@ -594,7 +594,7 @@ td, th {
           <tr>
             <td>{ formats.number(o.amount) }</td>
             <td>{ formats.currency_usd(o.price) }</td>
-            <td>{ formats.time(o.created) }</td>
+            <td class="right-align">{ formats.time(o.created) }</td>
           </tr>
           {/each}
         </tbody>
