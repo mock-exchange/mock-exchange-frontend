@@ -127,12 +127,6 @@
       active_orders = data.results;
     });
 
-    fetch(`/api/order?owner_id=${owner_id}`)
-    .then(r => r.json())
-    .then(data => {
-      orders = data.results;
-    });
-
 
     fetch(`/api/ohlc?interval=${interval}&market_id=${markets_idx[market]}`)
     .then(r => r.json())
@@ -195,21 +189,6 @@
 
   }
 
-  function abbreviateNumber(value) {
-    let newValue = value;
-    const suffixes = ["", "K", "M", "B","T"];
-    let suffixNum = 0;
-    while (newValue >= 1000) {
-      newValue /= 1000;
-      suffixNum++;
-    }
-
-    newValue = newValue.toPrecision(3);
-
-    newValue += suffixes[suffixNum];
-    return newValue;
-  }
-
   function renderChart() {
     var ctx = document.getElementById("book_chart").getContext("2d");
     var chart = new Chart(ctx, {
@@ -229,14 +208,14 @@
                 position: 'right',
                 ticks: {
                     callback: function(value, index, values) {
-                        return abbreviateNumber(value);
+                        return formats.compact_number(value);
                     }
                 }
             }, {
                 position: 'left',
                 ticks: {
                     callback: function(value, index, values) {
-                        return abbreviateNumber(value);
+                        return formats.compact_number(value);
                     }
                 }
             }],
@@ -244,7 +223,10 @@
                 ticks: {
                     autoSkip: true,
                     autoSkipPadding: 10,
-                    maxRotation: 0
+                    maxRotation: 0,
+                    callback: function(value, index, values) {
+                        return formats.currency_usd(value);
+                    }
                 }
             }]
         }
@@ -425,7 +407,7 @@ td, th {
             <div class="grey-text">24h Price</div>
           </div>
           <div>
-            <div class="card-title">{ formats.number(last24.volume) }</div>
+            <div class="card-title">{ formats.compact_number(last24.volume) }</div>
             <div class="grey-text">24h Volume</div>
           </div>
           <div>

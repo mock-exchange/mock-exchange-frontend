@@ -1,15 +1,24 @@
 // Common formats
 import { format } from 'date-fns'
 
-const currencyUSDFormat = new Intl.NumberFormat('en-US', {
+const locale = 'en-US'
+
+const currencyUSDFormat = new Intl.NumberFormat(locale, {
   style: 'currency', currency: 'USD' });
 
-const percentFormat = new Intl.NumberFormat('en-US', {
+const currencyUSDNoDecimalFormat = new Intl.NumberFormat(locale, {
+  style: 'currency', currency: 'USD', minimumFractionDigits: 0,
+  maximumFractionDigits: 0 });
+
+const percentFormat = new Intl.NumberFormat(locale, {
   style: 'percent', minimumFractionDigits: 1,
   maximumFractionDigits: 1 });
 
-const numberFormat = new Intl.NumberFormat('en-US');
+const numberFormat = new Intl.NumberFormat(locale);
 
+const compactNumberFormat = new Intl.NumberFormat(locale, {
+  notation: "compact" , compactDisplay: "short",
+  minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
 export default {
   datetime(dt) {
@@ -24,8 +33,13 @@ export default {
     return format(Date.parse(dt), 'hh:mm:ss aaa')
   },
 
-  currency_usd(value) {
-    return currencyUSDFormat.format(value)
+  currency_usd(value, trunc_decimal) {
+    if (trunc_decimal){
+      return currencyUSDNoDecimalFormat.format(value)
+    }
+    else {
+      return currencyUSDFormat.format(value)
+    }
   },
 
   currency_btc(value) {
@@ -38,6 +52,10 @@ export default {
 
   number(value) {
     return numberFormat.format(value)
+  },
+
+  compact_number(value) {
+    return compactNumberFormat.format(value)
   },
 
   order_num(value) {
