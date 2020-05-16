@@ -60,6 +60,10 @@
   let owner_id;
   let side = 'buy'
 
+  let polling_on = false
+  let polling_inprogress = 0
+  let polling_expired = false
+
   let last24 = {
     open: 0,
     high: 0,
@@ -99,16 +103,10 @@
     });
 
 
-    // Active
-    window.addEventListener('focus', startTimer);
-
-    // Inactive
-    window.addEventListener('blur', stopTimer);
-
-
     makeChart('chart');
   })
   let myInterval;
+  let myTimeout;
 
   // This runs when the route changes
   $: if (process.browser) {
@@ -135,7 +133,6 @@
     });
 
 
-    startTimer()
 
     fetchChart()
   }
@@ -234,33 +231,41 @@
     });
   }
 
-  // Start timer
-  function startTimer() {
-    console.log('focus startTime()');
-    fetchTrades()
-    //myInterval = setInterval(() => { fetchTrades() }, 5000);
+  function togglePolling() {
+    polling_on = !polling_on;
+    polling_expired = false;
+
+    if (polling_on) {
+      myInterval = setInterval(() => { runPolling() }, 5*1000);
+      myTimeout = setTimeout(() => { expirePolling() }, 30*1000);
+    }
+    else {
+      window.clearInterval(myInterval);
+    }
   }
 
-  // Stop timer
-  function stopTimer() {
-    console.log('stopTimer');
-    //window.clearInterval(myInterval);
+  function expirePolling() {
+    window.clearInterval(myInterval);
+    polling_on = false;
+    polling_expired = true
   }
 
+  function runPolling() {
+    polling_inprogress = 2;
 
-  function fetchTrades() {
-    console.log('fetchTrades()')
     // &owner=${owner_id}
     fetch(`/api/trade?per_page=30&order=id&market_id=${markets_idx[market]}`)
     .then(r => r.json())
     .then(data => {
       trades = data.results;
+      polling_inprogress -= 1;
     });
 
     fetch(`/api/last24?market_id=${markets_idx[market]}`)
     .then(r => r.json())
     .then(data => {
       last24 = data;
+      polling_inprogress -= 1;
     });
 
   }
@@ -418,7 +423,8 @@ td, th {
       </div>
     </div></div>
 
-    <div class="row"><div class="col s12">
+    <div class="row">
+      <div class="col s6">
       <div class="mex-btn-group">
       {#each intervals as i }
         {#if i === interval}
@@ -428,7 +434,22 @@ td, th {
         {/if}
       {/each}
       </div>
-    </div></div>
+      </div>
+      <div class="col s6 right-align">
+        {#if polling_inprogress}
+          <span ><i class="fas fa-spinner fa-spin"></i> Polling in progress..</span>
+        {:else if polling_expired}
+          <span>Polling expired.</span>
+        {/if}
+        <button class="btn-small" on:click={togglePolling}>
+        {#if polling_on}
+          Polling On
+        {:else}
+          Polling Off
+        {/if}
+        </button>
+      </div>
+    </div>
 
     <div class="row"><div class="col s12">
       <div id="chart"></div>
