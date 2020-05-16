@@ -164,6 +164,7 @@
       book_chart = {
         labels: prices,
         datasets: [{
+          yAxisID: 'buy-side',
           label: "Buy Amounts",
           backgroundColor: green,
           borderColor: green,
@@ -172,6 +173,7 @@
           data: amounts
         },
         {
+          yAxisID: 'sell-side',
           label: "Sell Amounts",
           backgroundColor: red,
           borderColor: red,
@@ -180,13 +182,24 @@
           data: sell_amounts
         }]
       }
-      renderChart()
+
+      function getMaxNumberFromArray(array) {
+          return array.reduce((a, b) => Math.max(a, b));
+      }
+
+      const maxYTick = Math.max(
+          getMaxNumberFromArray(amounts),
+          getMaxNumberFromArray(sell_amounts)
+      );
+
+      renderChart(maxYTick)
     });
 
 
   }
 
-  function renderChart() {
+  function renderChart(maxYTick) {
+
     var ctx = document.getElementById("book_chart").getContext("2d");
     var chart = new Chart(ctx, {
       type: "line",
@@ -202,15 +215,21 @@
         },
         scales: {
             yAxes: [{
+                id: 'sell-side',
                 position: 'right',
+                type: 'linear',
                 ticks: {
+                    max: maxYTick,
                     callback: function(value, index, values) {
                         return formats.compact_number(value);
                     }
                 }
             }, {
+                id: 'buy-side',
                 position: 'left',
+                type: 'linear',
                 ticks: {
+                    max: maxYTick,
                     callback: function(value, index, values) {
                         return formats.compact_number(value);
                     }
