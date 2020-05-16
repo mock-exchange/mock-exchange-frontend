@@ -35,7 +35,7 @@
         <a href="" data-target="mobile-menu" class="sidenav-trigger"><i class="material-icons">menu</i></a>
         <ul class="left hide-on-med-and-down">
             <li>
-            <a href="" class="mex-brand-logo"><i class="material-icons left">repeat</i>MOCKEX</a>
+            <a href="" class="mex-brand-logo"><i class="material-icons left">repeat</i>MEX</a>
             </li>
             <li class='{segment === "trade" ? "active" : undefined}'><a href="trade/BTCUSD">Trade</a></li>
             <li class='{segment === "history" ? "active" : undefined}'><a href="history/order">History</a></li>
