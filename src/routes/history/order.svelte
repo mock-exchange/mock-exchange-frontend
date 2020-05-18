@@ -63,7 +63,7 @@
 
 </style>
 
-<h3>Order History</h3>
+<h1>Order History</h1>
 
 {#if results}
 <table>
