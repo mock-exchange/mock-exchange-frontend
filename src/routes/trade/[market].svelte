@@ -280,7 +280,7 @@
       polling_inprogress -= 1;
     });
 
-    fetch(`/api/last24?market_id=${markets_idx[market]}`)
+    fetch(`/api/last24/${markets_idx[market]}`)
     .then(r => r.json())
     .then(data => {
       last24 = data;
