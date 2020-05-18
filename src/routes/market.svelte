@@ -4,15 +4,16 @@
 
 <script>
   import { onMount } from "svelte";
+  import formats from '../formats.js';
 
   let assets;
   let markets;
 
   onMount(async () => {
-    fetch(`/api/market`)
+    fetch(`/api/last24`)
     .then(r => r.json())
     .then(data => {
-      markets = data.results;
+      markets = data
     });
     fetch(`/api/asset`)
     .then(r => r.json())
@@ -24,30 +25,37 @@
 </script>
 
 
+<h1>Markets</h1>
+
 <table>
 <thead>
   <tr>
     <th>Market</th>
     <th>24h Volume</th>
-    <th>90d Volume</th>
+    <th>24h Price</th>
     <th>24h Open</th>
     <th>24h High</th>
     <th>24h Low</th>
     <th>Last Price</th>
+    <th>Avg Price</th>
   </tr>
 </thead>
 
 <tbody>
   {#if markets}
-    {#each markets as market }
+    {#each markets as m }
     <tr>
-    <td>{market.name}</td>
-    <td>..</td>
-    <td>..</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>{m.name}</td>
+    <td>{ formats.compact_number(m.volume) }</td>
+    <td
+      class:red-text={m.change < 0}
+      class:green-text={m.change > 0}
+    >{ formats.percent(m.change) }</td>
+    <td>{ formats.currency_usd(m.open) }</td>
+    <td>{ formats.currency_usd(m.high) }</td>
+    <td>{ formats.currency_usd(m.low) }</td>
+    <td>{ formats.currency_usd(m.close) }</td>
+    <td>{ formats.currency_usd(m.avg_price) }</td>
     </tr>
     {/each}
   {:else}
