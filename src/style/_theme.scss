@@ -1,6 +1,8 @@
 
-$primary-color: color("amber", "base");
+//$primary-color: color("amber", "base");
+$primary-color: color("orange", "darken-4");
 $secondary-color: color("blue-grey", "darken-2");
+$highlight-color: color("orange", "darken-4");
 
 $mex-primary-bg-color: color("blue-grey", "darken-4");
 $mex-secondary-bg-color: color("blue-grey", "darken-3");
@@ -9,7 +11,10 @@ $mex-secondary-bg-color: color("blue-grey", "darken-3");
 //$off-black: color("grey", "lighten-5");
 $off-black: color("blue-grey", "lighten-5");
 
+$highlight-text-color: color("grey", "darken-4");
+
 $card-bg-color: $mex-secondary-bg-color;
+
 
 // Header Styles
 $h1-fontsize: 2rem !default;
@@ -18,5 +23,13 @@ $h3-fontsize: 1.17rem !default;
 $h4-fontsize: 1rem !default;
 $h5-fontsize: .83rem !default;
 $h6-fontsize: .75rem !default;
+
+// Collection
+$collection-border-color: darken($mex-secondary-bg-color, 5%) !default;
+$collection-bg-color: $mex-secondary-bg-color !default;
+$collection-active-bg-color: $secondary-color !default;
+$collection-active-color: lighten($secondary-color, 55%) !default;
+$collection-hover-bg-color: #ddd !default;
+$collection-link-color: $secondary-color !default;
 
 

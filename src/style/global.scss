@@ -5,6 +5,9 @@
 $buy-color: color("green", "lighten-1");
 $sell-color: color("red", "lighten-1");
 
+.login-container {
+  max-width: 500px;
+}
 
 body {
   background-color: $mex-primary-bg-color;
@@ -18,12 +21,24 @@ nav .mex-brand-logo {
   color: $primary-color;
 }
 
+input {
+  color: $off-black;
+}
+
 .me-buy {
   background-color: $buy-color;
 }
 
 .me-sell {
   background-color: $sell-color;
+}
+
+.mex-primary-color {
+  background-color: $primary-color;
+}
+
+.mex-primary-text-color {
+  color: $primary-color;
 }
 
 .mex-card-panel {
@@ -51,6 +66,41 @@ nav .mex-brand-logo {
 
 .mex-btn-group-justified > button {
   flex: 1;
+}
+
+.mex-btn-primary {
+  //background-color: $primary-color;
+}
+
+// autocompleter
+
+.autocomplete {
+    background: white;
+    color: black;
+    z-index: 1000;
+
+    //font: 14px/22px "-apple-system", BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow: auto;
+    box-sizing: border-box;
+    //border: 1px solid rgba(50, 50, 50, 0.6);
+}
+
+.autocomplete * {
+    font: inherit;
+}
+
+.autocomplete > div {
+    padding: 10px 15px;
+}
+
+.autocomplete .group {
+    background: #eee;
+}
+
+.autocomplete > div:hover:not(.group),
+.autocomplete > div.selected {
+    background-color: $highlight-color;
+    cursor: pointer;
 }
 
 
