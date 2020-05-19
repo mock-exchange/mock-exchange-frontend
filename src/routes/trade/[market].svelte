@@ -15,7 +15,6 @@
   const numberFormat2 = new Intl.NumberFormat('en-US', options2);
 
   import { onMount } from "svelte";
-  import { owner_name } from '../../store.js'
   import { makeChart, updateChart } from '../../lightchart.js'
 
 
@@ -108,6 +107,8 @@
   let myInterval;
   let myTimeout;
 
+  let user
+
   // This runs when the route changes
   $: if (process.browser) {
     market = $page.params.market
@@ -115,7 +116,10 @@
     console.log('markets:',markets)
     this_market = markets_idx[market]
 
-    owner_id = window.localStorage.getItem('owner_id');
+    user = sessionStorage.getItem('user')
+    if (user){
+      owner_id = user.id
+    }
 
     console.log('owner_id:'+owner_id);
 

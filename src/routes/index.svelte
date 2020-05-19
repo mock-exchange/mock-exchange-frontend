@@ -7,14 +7,11 @@
   import formats from "../formats.js";
 
   let balances;
-  let owner_id;
-  let owner_name;
+  let user = JSON.parse(sessionStorage.getItem('user'))
 
   onMount(async () => {
-    owner_id = window.localStorage.getItem('owner_id');
-    owner_name = window.localStorage.getItem('owner_name');
 
-    fetch(`/api/balance?owner_id=${owner_id}`)
+    fetch(`/api/balance?owner_id=${user.id}`)
     .then(r => r.json())
     .then(data => {
         balances = data;
@@ -22,7 +19,7 @@
   })
 </script>
 
-<h1>Balances for {owner_name}</h1>
+<h1>Balances for {user.name}</h1>
 
 
 {#if balances}
