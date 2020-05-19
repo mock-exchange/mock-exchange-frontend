@@ -4,117 +4,112 @@
 <script>
   import { goto, stores } from '@sapper/app'
   import { onMount } from "svelte";
+  import autocomplete from 'autocompleter';
 
   const { session } = stores()
-  let inProgress = false
-  let error = null
 
-
-  let owners
-  let ac_timer
-  let ac_list = []
-  let ac_highlighted;
   let selected = {}
+  let recent_users = []
 
   onMount(async () => {
 
+    var input = document.getElementById("login");
+
+    var users = localStorage.getItem('recent_users')
+    if (users){
+      recent_users = JSON.parse(users).reverse().slice(0,5)
+    }
+
     /*
-    var el = document.getElementById('login_autocomplete');
-    var instances = M.Autocomplete.init(el, {
-      onAutocomplete: () => {
-        console.log("onAutocomplete");
-      },
-      data: {
-        "Apple": null,
-        "Microsoft": null,
-        "Google": 'https://placehold.it/250x250'
-      }
-    });
-    */
+    var more_qty = 5 - recent_users.length
 
-    await fetch(`/api/owner?per_page=5`)
-    .then(r => r.json())
-    .then(data => {
-      owners = data.results;
-    });
-  })
-
-  function autoComplete(form) {
-    clearTimeout(ac_timer)
-    ac_timer = setTimeout(() => {
-      var q = '%' + document.forms.search_form.elements['q'].value + '%';
-      fetch(`/api/owner?per_page=5&name__like=${q}`)
+    if (more_qty > 0){
+      fetch(`/api/owner?per_page=${more_qty}`)
       .then(r => r.json())
       .then(data => {
-        ac_list = data.results;
-
-      });
-    }, 750)
-  }
-
-  function navigate(e) {
-    if (!ac_list.length){
-      return
+        recent_users.push(data.results)
+      })
     }
-    switch (e.keyCode) {
-      case 13: // enter
-        console.log("ac selected")
-        selected = ac_list[ac_highlighted]
-        ac_highlighted = undefined
+    */
 
-        break;
-      case 38: // up
-        if (ac_highlighted === undefined){
-          ac_highlighted = ac_list.length -1
-        }
-        else {
-          ac_highlighted -= 1
-        }
-
-        if (ac_highlighted < 0){
-          ac_highlighted = ac_list.length -1
+    autocomplete({
+      input: input,
+      emptyMsg: 'No users found',
+      debounceWaitMs: 700,
+      showOnFocus: true,
+      //preventSubmit: true,
+      fetch: (text, update) => {
+        // If text changed, clear selected
+        console.log("text:",text, " len:", Object.keys(selected).length);
+        if (Object.keys(selected).length && selected['name'] != text){
+          console.log("CLEAR!")
+          selected = {}
         }
 
-        console.log("key up:"+ac_highlighted)
-        break;
-      case 40: // down
-        if (ac_highlighted === undefined){
-          ac_highlighted = 0
-        }
-        else {
-          ac_highlighted += 1
-        }
+        text = '%' + text.toLowerCase() + '%';
+        // you can also use AJAX requests instead of preloaded data
+        fetch(`/api/owner?per_page=20&name__like=${text}`)
+        .then(r => r.json())
+        .then(data => {
+          var suggestions = []
+          data.results.forEach((user, i) => {
+            // var u = Object.assign({}, user)
+            var u = { ...user }
+            u['index'] = i
+            u['label'] = user.name
+            suggestions.push(u)
+          })
+          update(suggestions);
+        });
+      },
+      onSelect: function(item) {
+        selected = item;
+        input.value = item.name;
+        console.log("onSelect selected:",selected);
+      },
+      customize: function(input, inputRect, container, maxHeight) {
+        container.style.maxHeight = "20em";
+      }
 
-        if (ac_highlighted > ac_list.length - 1){
-          ac_highlighted = 0
-        }
+    });
 
+  })
 
-        console.log("key down:"+ac_highlighted)
-        break;
-    }
-
-    if (ac_highlighted){
-      document.getElementById('ac_dropdown').focus()
-    }
-  }
-
-  function selectUser(u) {
-    //var user = JSON.parse($window.sessionStorage.user);
-    selected = u
-  }
-
-
-  async function submit () {
-    if (selected){
+  async function login () {
+    var input = document.getElementById("login");
+    if (Object.keys(selected).length){
+      console.log("OK to do login selected:",selected);
       sessionStorage.setItem('user', JSON.stringify(selected))
+      addUserToRecents(selected)
       goto('/')
     }
   }
+
+  function addUserToRecents (user) {
+    var users = localStorage.getItem('recent_users')
+    if (!users){ users = [] }
+    else { users = JSON.parse(users) }
+
+    var remove;
+    users.forEach((u, i) => {
+      if (u.id == user.id){
+        remove = i
+      }
+    })
+    if (remove){
+      users.splice(remove,1)
+    }
+
+    users.push(user)
+    if (users.length > 10){ users.shift() }
+    localStorage.setItem('recent_users', JSON.stringify(users))
+  }
+
 </script>
 
 <style>
-.collection {
+.collection-item {
+  cursor: hand;
 }
 .collection-item.avatar {
   min-height: 0;
@@ -149,35 +144,21 @@
 
 <h1>Login</h1>
 
+<form name="login_form" on:submit|preventDefault={login}>
 
-<form name="search_form" on:submit|preventDefault="{submit}">
-  <div class="row">
-    <div class="col s12">
-      <div class="row">
-        <div class="input-field col s12">
-          <i class="material-icons prefix">search</i>
-          <input type="text" name="q" id="login_autocomplete" class="autocomplete" on:keyup="{autoComplete}" on:keydown={navigate}>
-          <label for="login_autocomplete">User</label>
+<div class="row">
+  <div class="input-field col s12">
 
-          <ul id="ac_dropdown" class="autocomplete-content dropdown-content ac-dropdown" tabindex="0" on:keydown={navigate}>
-            {#each ac_list as u, i}
-            <li>
-              <img src="/foo{u.picture}" class="left circle">
-              <span class:highlight={i === ac_highlighted}>{i} {u.name}</span>
-            </li>
-            {/each}
-          </ul>
+    <input type="text" name="login" id="login" />
+    <label for="login">Username</label>
 
-        </div>
-      </div>
-    </div>
   </div>
-</form>
+</div>
 
-{#if owners}
+{#if recent_users}
   <ul class="collection">
-    {#each owners as u }
-    <li class="collection-item avatar" class:active={selected.id === u.id} on:click={selectUser(u)}>
+    {#each recent_users as u }
+    <li class="collection-item avatar" class:active={selected.id === u.id} on:click={() => selected = u}>
       <img src="/foo{u.picture}" alt="" class="circle">
       <span class="title">{u.name}</span>
       <p>{u.email}</p>
@@ -189,13 +170,13 @@
   <p class="loading">loading...</p>
 {/if}
 
-  <div class="card-action">
+  <div class="card-action row">
     <button
-      class="btn mex-btn-primary"
-      disabled="{inProgress}"
+      class="btn col s12 mex-btn-primary"
     >Login</button>
   </div>
 
-</div>
+</form>
 
+</div>
 

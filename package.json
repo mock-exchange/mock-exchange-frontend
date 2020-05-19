@@ -26,6 +26,7 @@
     "@rollup/plugin-commonjs": "11.0.2",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "@rollup/plugin-replace": "^2.2.0",
+    "autocompleter": "^6.0.3",
     "autoprefixer": "^9.7.6",
     "chart.js": "^2.9.3",
     "date-fns": "^2.13.0",
