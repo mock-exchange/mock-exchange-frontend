@@ -11,12 +11,18 @@ const apiProxy = createProxyMiddleware('/api', {
   target: 'http://localhost:5000',
   changeOrigin: true,
 })
+const apiProxy2 = createProxyMiddleware('/foo', {
+  target: 'http://localhost:5000',
+  changeOrigin: true,
+})
+
 
 polka() // You can also use Express
   .use(
     compression({ threshold: 0 }),
     sirv('static', { dev }),
     apiProxy,
+    apiProxy2,
     sapper.middleware()
   )
   .listen(PORT, err => {

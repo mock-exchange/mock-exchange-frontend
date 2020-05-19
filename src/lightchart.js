@@ -11,7 +11,7 @@ export function updateChart(data) {
   console.log(data);
   console.log('candleSeries:',candleSeries);
   candleSeries.setData(data);
-  volumeSeries.setData(data);
+  //volumeSeries.setData(data);
 }
 
 export function makeChart(id) {
@@ -51,7 +51,8 @@ export function makeChart(id) {
     priceScale: {
       autoScale: true,
       borderColor: 'rgba(197, 203, 206, 0.8)',
-      mode: LightweightCharts.PriceScaleMode.Linear,
+      mode: LightweightCharts.PriceScaleMode.Normal,
+      //mode: LightweightCharts.PriceScaleMode.Linear,
       //mode: LightweightCharts.PriceScaleMode.Logarithmic,
 
     },
@@ -72,6 +73,7 @@ export function makeChart(id) {
     wickDownColor: red,
   });
 
+/*
   volumeSeries = chart.addHistogramSeries({
     color: '#666666',
     lineWidth: 2,
@@ -84,5 +86,5 @@ export function makeChart(id) {
       bottom: 0,
     },
   });
-
+*/
 }
