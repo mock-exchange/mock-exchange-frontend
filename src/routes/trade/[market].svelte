@@ -116,7 +116,8 @@
     console.log('markets:',markets)
     this_market = markets_idx[market]
 
-    user = sessionStorage.getItem('user')
+    user = JSON.parse(sessionStorage.getItem('user'));
+
     if (user){
       owner_id = user.id
     }

@@ -22,6 +22,8 @@
 
   let total;
 
+  let user
+
   // This runs when the route changes
   $: if (process.browser) {
     if (!query.page){
@@ -31,7 +33,11 @@
       query.per_page = 10
     }
 
-    owner_id = window.localStorage.getItem('owner_id');
+    user = JSON.parse(sessionStorage.getItem('user'));
+    console.log("xx user:",user);
+    owner_id = user.id
+    console.log("owner_id:",owner_id);
+
     var api_query = Object.assign({}, query);
     api_query.owner_id = owner_id
     api_query.status__notin = 'open'
