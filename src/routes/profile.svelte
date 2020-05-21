@@ -34,7 +34,14 @@
 
   function deposit(i) {
     var b = balances[i]
+    // Increase fake balance by $10k worth
     var amount = 10
+    if (b.asset_id == 1){ // USD
+      amount = 10000
+    }
+    else if (b.last_price){
+      amount = (10000 / b.last_price).toFixed(10)
+    }
     var event = {
       method: 'deposit',
       body: JSON.stringify({
@@ -52,14 +59,15 @@
     })
     .then(r => r.json())
     .then(data => {
-      balances[i].balance = b.balance + amount;
+      balances[i].balance = parseFloat(b.balance) + parseFloat(amount);
       M.toast({html: 'Deposit of '+amount+' submitted!'});
     });
   }
 
   function withdraw(i) {
     var b = balances[i]
-    var amount = Math.ceil(b.balance * .5)
+    // Drop fake balance by half
+    var amount = (b.balance * .5).toFixed(10)
     var event = {
       method: 'withdraw',
       body: JSON.stringify({
