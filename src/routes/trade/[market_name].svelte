@@ -5,30 +5,20 @@
 <script context="module">
 
   export async function preload(page, session) {
-    const { market } = page.params;
+    const { market_name } = page.params;
 
     const res = await this.fetch(`/api/market`);
     const json = await res.json();
     const markets = json.results;
 
-    console.log("XXX json:",json);
-    console.log("XXX markets:",markets);
-
-
-
     let markets_idx = {}
     markets.forEach(m => {
-      markets_idx[m['name']] = m['id']
-
-      //if (market == m['name']){
-      //  asset = m['asset']
-      //  uoa = m['uoa']
-      //}
+      markets_idx[m['name']] = m
     })
 
-    const market_obj
+    const market = markets_idx[market_name]
 
-    return { markets, markets_idx }
+    return { market, markets }
   }
 
 </script>
@@ -36,7 +26,6 @@
 <script>
   import { format } from 'date-fns'
   import Chart from "chart.js";
-
   import { goto, stores } from '@sapper/app';
   import formats from '../../formats.js'
 
@@ -64,8 +53,11 @@
   let asset_wallet = {}
   let uoa_wallet = {}
 
+  export let market = {};
   export let markets = [];
-  export let markets_idx = {};
+
+  console.log("init market:",market);
+  console.log("init markets:",markets);
 
   let this_market = {
     name: 'undef',
@@ -77,7 +69,6 @@
   let intervals = ['1m','5m','15m','1h','6h','1d']
   let interval = '15m'
 
-  export let market;
 
   let direction = 'buy';
   let directions = ['buy', 'sell'];
@@ -117,24 +108,8 @@
   onMount(async () => {
     console.log("trade.svelte module onMount");
 
-    /*
-    fetch(`/api/market`)
-    .then(r => r.json())
-    .then(data => {
-      console.log('handle market results')
-      markets = data.results;
-      markets.forEach(m => {
-        markets_idx[m['name']] = m['id']
-
-        if (market == m['name']){
-          asset = m['asset']
-          uoa = m['uoa']
-        }
-      })
-
-    });
-    */
-
+    console.log("onMount market:",market);
+    console.log("onMount markets:",markets);
 
     var elems = document.querySelectorAll('.tabs');
     var instance = M.Tabs.init(elems);
@@ -156,10 +131,8 @@
 
   // This runs when the route changes
   $: if (process.browser) {
-    market = $page.params.market
-    console.log('xx process.browser  $page.params.market:'+market);
+    console.log('xx pocess.browser  $page.params.market:',market);
     console.log('markets:',markets)
-    this_market = markets_idx[market]
 
     user = JSON.parse(sessionStorage.getItem('user'));
 
@@ -176,7 +149,7 @@
     });
 
 
-    fetch(`/api/ohlc?interval=${interval}&market_id=${markets_idx[market]}`)
+    fetch(`/api/ohlc?interval=${interval}&market_id=${market.id}`)
     .then(r => r.json())
     .then(data => {
       updateChart(data);
@@ -189,7 +162,7 @@
   }
 
   function fetchChart() {
-    fetch(`/api/book?market_id=${markets_idx[market]}`)
+    fetch(`/api/book?market_id=${market.id}`)
     .then(r => r.json())
     .then(data => {
       book_chart = {}
@@ -326,14 +299,14 @@
     polling_inprogress = 3;
 
     // &owner=${owner_id}
-    fetch(`/api/trade?per_page=30&order=id&market_id=${markets_idx[market]}`)
+    fetch(`/api/trade?per_page=30&order=id&market_id=${market.id}`)
     .then(r => r.json())
     .then(data => {
       trades = data.results;
       polling_inprogress -= 1;
     });
 
-    fetch(`/api/last24/${markets_idx[market]}`)
+    fetch(`/api/last24/${market.id}`)
     .then(r => r.json())
     .then(data => {
       last24 = data;
@@ -363,8 +336,6 @@
   async function navigateMarket(m) {
     console.log('navigateMarket')
     goto(`/trade/${m}`)
-    //updateChart(markets_idx[m]);
-    //console.log('market:'+market);
   }
 
   async function handleOrderSubmit(e) {
@@ -469,8 +440,8 @@ td, th {
         <div class="card-panel mex-card-panel">
           <div>
             <a id="market_drop_trigger" class="btn z-depth-0 dropdown-trigger" data-target="market_dropdown">
-              <i class="fab fa-bitcoin fa-fw"></i>
-              {market}
+              <i class="{market.asset.icon} fa-fw"></i>
+              {market.name}
               <i class="material-icons right">arrow_drop_down</i>
             </a>
 
