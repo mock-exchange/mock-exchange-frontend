@@ -7,54 +7,100 @@
   import formats from '../formats.js';
   import { goto, stores } from '@sapper/app';
 
+  let user = {}
+  let user_fetched = {}
+  let profile = {}
+  let location = {}
   let balances;
-  let owner_id;
-  let owner_name;
-  let owner = {};
 
-  // This runs when the route changes
-  $: if (process.browser) {
+  onMount(() => {
 
-    owner_id = window.localStorage.getItem('owner_id');
-    owner_name = window.localStorage.getItem('owner_name');
+    user = JSON.parse(sessionStorage.getItem('user'))
 
-    fetch(`/api/owner/${owner_id}`)
+    fetch(`/api/owner/${user.id}`)
     .then(r => r.json())
     .then(data => {
-        owner = data;
+        user_fetched = data
+        profile = JSON.parse(user_fetched['profile'])
+        location = profile['location']
     });
 
-    fetch(`/api/balance?owner_id=${owner_id}`)
+    fetch(`/api/balance?owner_id=${user.id}`)
     .then(r => r.json())
     .then(data => {
         balances = data;
+    });
+  })
+
+  function deposit(i) {
+    var b = balances[i]
+    var amount = 10
+    var event = {
+      method: 'deposit',
+      body: JSON.stringify({
+        owner_id: user.id,
+        asset_id: b.asset_id,
+        amount: amount
+      })
+    }
+    fetch(`/api/event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(event)
+    })
+    .then(r => r.json())
+    .then(data => {
+      balances[i].balance = b.balance + amount;
+      M.toast({html: 'Deposit of '+amount+' submitted!'});
+    });
+  }
+
+  function withdraw(i) {
+    var b = balances[i]
+    var amount = Math.ceil(b.balance * .5)
+    var event = {
+      method: 'withdraw',
+      body: JSON.stringify({
+        owner_id: user.id,
+        asset_id: b.asset_id,
+        amount: amount
+      })
+    }
+    fetch(`/api/event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(event)
+    })
+    .then(r => r.json())
+    .then(data => {
+      balances[i].balance = b.balance - amount;
+      M.toast({html: 'Withdraw of '+amount+' submitted!'});
     });
   }
 
 </script>
 
+<div id="foox"></div>
 
-<h1>Profile</h1>
-
-
-      <div class="col s12 m8 offset-m2 l6 offset-l3">
-        <div class="card-panel grey lighten-5 z-depth-1">
-          <div class="row valign-wrapper">
-            <div class="col s2">
-              <img src="/foo/{owner.picture}" alt="" class="circle responsive-img"> <!-- notice the "circle" class -->
-            </div>
-            <div class="col s10">
-              <span class="black-text">
-                This is a square image. Add the "circle" class to it to make it appear circular.
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+<div class="row">
+  <div class="col s2">
+    <img src="/foo{user.picture}" alt="" class="circle responsive-img">
+  </div>
+  <div class="col s10">
+    <h2>{user.name}</h2>
+    <p>{user.email}</p>
+    <span><i class="material-icons">location_on</i> {location.city}</span>
+    <span><i class="material-icons">phone</i> {profile.phone}</span>
+  </div>
+</div>
 
 
 
-<h2>Balances for {owner_name}</h2>
+<h2>Balances for {user.name}</h2>
 
 
 {#if balances}
@@ -69,7 +115,7 @@
     </tr>
   </thead>
   <tbody>
-    {#each balances as o }
+    {#each balances as o, i}
     <tr>
       <td><i class="{o.icon} fa-2x fa-fw"></i> {o.name} ({o.symbol})</td>
       <td class="right-align">{ formats.number(o.balance) }</td>
@@ -78,11 +124,11 @@
         <td class="right-align">{ formats.currency_usd(o.balance) }</td>
       {:else}
         <td class="right-align">{ formats.currency_usd(o.last_price) }</td>
-        <td class="right-align">{ formats.currency_usd(o.usd_value) }</td>
+        <td class="right-align">{ formats.currency_usd(o.last_price * o.balance) }</td>
       {/if}
       <td class="right-align">
-        <button class="btn">Deposit</button>
-        <button class="btn">Withdraw</button>
+        <button class="btn" on:click={() => deposit(i)}>Deposit</button>
+        <button class="btn" on:click={() => withdraw(i)}>Withdraw</button>
       </td>
     </tr>
     {/each}
