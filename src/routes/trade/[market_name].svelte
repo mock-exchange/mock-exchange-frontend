@@ -1,9 +1,8 @@
 <svelte:head>
-  <title>Trade</title>
+  <title>Trade {market.name}</title>
 </svelte:head>
 
 <script context="module">
-
   export async function preload(page, session) {
     const { market_name } = page.params;
 
@@ -20,77 +19,24 @@
 
     return { market, markets }
   }
-
 </script>
 
 <script>
-  import { format } from 'date-fns'
-  import Chart from "chart.js";
-  import { goto, stores } from '@sapper/app';
-  import formats from '../../formats.js'
-
-  const { page } = stores();
-
-  const options2 = { style: 'currency', currency: 'USD' };
-  const numberFormat2 = new Intl.NumberFormat('en-US', options2);
-
   import { onMount } from "svelte";
+  import { goto, stores } from '@sapper/app';
+  import Chart from "chart.js";
+  import formats from '../../formats.js'
   import { makeChart, updateChart } from '../../lightchart.js'
 
-
-  let menu;
-  let menu2;
-  let menu3;
-  let anchor2;
-  let clicked = 'nothing yet';
-  let clicked2 = 'nothing yet';
-  let selected1 = 'Red';
-  let selected2 = 'Small';
-
-  let asset = {}
-  let uoa = {}
-
-  let asset_wallet = {}
-  let uoa_wallet = {}
-
+  // Things depend on this stuff being fetched
   export let market = {};
   export let markets = [];
-
-  console.log("init market:",market);
-  console.log("init markets:",markets);
-
-  let this_market = {
-    name: 'undef',
-    asset: {
-      icon: 'fas fa-question'
-    }
-  };
 
   let intervals = ['1m','5m','15m','1h','6h','1d']
   let interval = '15m'
 
-
-  let direction = 'buy';
-  let directions = ['buy', 'sell'];
-
-  let type = 'limit';
-  let types = ['limit', 'market'];
-
-  let valuePrice = '';
-  let valueAmount = '';
-
-  let orders;
-  let active_orders;
-  let trades;
-
-  let book_chart;
-
-  let owner_id;
-  let side = 'buy'
-
-  let polling_on = false
-  let polling_inprogress = 0
-  let polling_expired = false
+  let pollingInterval;
+  let pollingTimeout;
 
   let last24 = {
     open: 0,
@@ -100,54 +46,46 @@
     avg_price: 0,
     volume: 0,
     change: 0
-  };
+  }
+
+  let all_trades;
+  let book_chart;
+
+  let polling_on = false
+  let polling_inprogress = 0
+  let polling_expired = false
 
   let red = 'rgba(228, 78, 93, 1)';
   let green = 'rgba(95, 186, 137, 1)';
 
+  let side = 'buy'
+
+  // User specific
+  let user
+  let owner_id;
+  let active_orders;
+  let asset_wallet = {}
+  let uoa_wallet = {}
+
   onMount(async () => {
-    console.log("trade.svelte module onMount");
+    console.log("onMount");
 
-    console.log("onMount market:",market);
-    console.log("onMount markets:",markets);
-
-    var elems = document.querySelectorAll('.tabs');
-    var instance = M.Tabs.init(elems);
-
-    var el = document.getElementById('market_drop_trigger');
+    var el = document.getElementById('market_select_trigger');
     var instances2 = M.Dropdown.init(el, {
       alignment: 'left',
       coverTrigger: false,
       constrainWidth: false
     });
 
-
     makeChart('chart');
   })
-  let myInterval;
-  let myTimeout;
-
-  let user
 
   // This runs when the route changes
   $: if (process.browser) {
-    console.log('xx pocess.browser  $page.params.market:',market);
-    console.log('markets:',markets)
+    console.log('START p rocess.browser');
 
     user = JSON.parse(sessionStorage.getItem('user'));
-
-    if (user){
-      owner_id = user.id
-    }
-
-    console.log('owner_id:'+owner_id);
-
-    fetch(`/api/order?status__in=open,partial&owner_id=${owner_id}`)
-    .then(r => r.json())
-    .then(data => {
-      active_orders = data.results;
-    });
-
+    owner_id = user.id
 
     fetch(`/api/ohlc?interval=${interval}&market_id=${market.id}`)
     .then(r => r.json())
@@ -155,10 +93,8 @@
       updateChart(data);
     });
 
-
-
     fetchChart()
-    //runPolling()
+    runPolling()
   }
 
   function fetchChart() {
@@ -280,29 +216,28 @@
 
     if (polling_on) {
       runPolling();
-      myInterval = setInterval(() => { runPolling() }, 5*1000);
-      myTimeout = setTimeout(() => { expirePolling() }, 15*60*1000); // 15 minutes
+      pollingInterval = setInterval(() => { runPolling() }, 5*1000);
+      pollingTimeout = setTimeout(() => { expirePolling() }, 15*60*1000); // 15 minutes
     }
     else {
-      clearInterval(myInterval);
-      clearTimeout(myTimeout);
+      clearInterval(pollingInterval);
+      clearTimeout(pollingTimeout);
     }
   }
 
   function expirePolling() {
-    clearInterval(myInterval);
+    clearInterval(pollingInterval);
     polling_on = false;
     polling_expired = true
   }
 
   function runPolling() {
-    polling_inprogress = 3;
+    polling_inprogress = 4;
 
-    // &owner=${owner_id}
     fetch(`/api/trade?per_page=30&order=id&market_id=${market.id}`)
     .then(r => r.json())
     .then(data => {
-      trades = data.results;
+      all_trades = data.results;
       polling_inprogress -= 1;
     });
 
@@ -313,6 +248,8 @@
       polling_inprogress -= 1;
     });
 
+    // User specific stuff only needs to update when the user
+    // submits events
     fetch(`/api/balance?owner_id=${owner_id}`)
     .then(r => r.json())
     .then(data => {
@@ -327,6 +264,33 @@
       polling_inprogress -= 1;
     });
 
+    fetch(`/api/order?status__in=open,partial&owner_id=${owner_id}`)
+    .then(r => r.json())
+    .then(data => {
+      active_orders = data.results;
+      polling_inprogress -= 1;
+    });
+
+  }
+
+  function selectPrice(what) {
+    var price = document.getElementById('price')
+    if (what == 'last'){
+      price.value = 10
+    }
+    else if (what == 'bid'){
+      price.value = 20
+    }
+    else if (what = 'ask'){
+      price.value = 30
+    }
+    price.focus()
+  }
+
+  function selectAmount(percent) {
+    var amount = document.getElementById('amount')
+    amount.value = asset_wallet.balance * percent / 100
+    amount.focus()
   }
 
   async function handleSubmit(event) {
@@ -439,7 +403,7 @@ td, th {
       <div class="trade_topbar">
         <div class="card-panel mex-card-panel">
           <div>
-            <a id="market_drop_trigger" class="btn z-depth-0 dropdown-trigger" data-target="market_dropdown">
+            <a id="market_select_trigger" class="btn z-depth-0 dropdown-trigger" data-target="market_dropdown">
               <i class="{market.asset.icon} fa-fw"></i>
               {market.name}
               <i class="material-icons right">arrow_drop_down</i>
@@ -543,7 +507,7 @@ td, th {
           {#each active_orders as o }
           <tr>
             <td>{ o.id.toString().padStart(8, '0') }</td>
-            <td>{ format(Date.parse(o.created), 'yyyy-mm-dd hh:mm:ss aaa') }</td>
+            <td>{ formats.datetime(o.created) }</td>
             <td>
               <span class="badge white-text darken-2"
                 class:me-sell={o.side === 'sell'}
@@ -591,9 +555,9 @@ td, th {
     </div>
     <div class="row">
         <div class="right-align col s12">
-            <button class="btn-small">Bid</button>
-            <button class="btn-small">Ask</button>
-            <button class="btn-small">Last</button>
+            <button class="btn-small" on:click={() => selectPrice('bid')}>Bid</button>
+            <button class="btn-small" on:click={() => selectPrice('ask')}>Ask</button>
+            <button class="btn-small" on:click={() => selectPrice('last')}>Last</button>
         </div>
 
         <div class="input-field col s12">
@@ -609,10 +573,10 @@ td, th {
     </div>
     <div class="row">
         <div class="right-align col s12">
-            <button class="btn-small">25%</button>
-            <button class="btn-small">50%</button>
-            <button class="btn-small">75%</button>
-            <button class="btn-small">100%</button>
+            <button class="btn-small" on:click={() => selectAmount(25)}>25%</button>
+            <button class="btn-small" on:click={() => selectAmount(50)}>50%</button>
+            <button class="btn-small" on:click={() => selectAmount(75)}>75%</button>
+            <button class="btn-small" on:click={() => selectAmount(100)}>100%</button>
         </div>
 
         <div class="input-field col s12">
@@ -663,7 +627,7 @@ td, th {
         <div class="card-title">Trade History</div>
       </div>
 
-      {#if trades}
+      {#if all_trades}
       <table>
         <thead>
           <tr>
@@ -673,7 +637,7 @@ td, th {
           </tr>
         </thead>
         <tbody>
-          {#each trades as o }
+          {#each all_trades as o }
           <tr>
             <td>{ formats.number(o.amount) }</td>
             <td>{ formats.currency_usd(o.price) }</td>
