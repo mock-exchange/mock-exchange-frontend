@@ -317,10 +317,10 @@
     .then(r => r.json())
     .then(data => {
       data.forEach((d) => {
-        if (asset['id'] == d['asset_id']){
+        if (market.asset.id == d['asset_id']){
           asset_wallet = d
         }
-        else if (uoa['id'] == d['asset_id']){
+        else if (market.uoa.id == d['asset_id']){
           uoa_wallet = d
         }
       });
@@ -635,8 +635,8 @@ td, th {
       <tbody>
         <tr>
           <td></td>
-          <td class="right-align">{uoa.name}</td>
-          <td class="right-align">{asset.name}</td>
+          <td class="right-align">{market.uoa.name}</td>
+          <td class="right-align">{market.asset.name}</td>
         </tr>
         <tr>
           <td>Balance</td>
