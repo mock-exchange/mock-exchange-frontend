@@ -109,7 +109,7 @@
 
 <style>
 .collection-item {
-  cursor: hand;
+  cursor: pointer;
 }
 .collection-item.avatar {
   min-height: 0;
@@ -142,7 +142,7 @@
             <img src="/foo{u.picture}" alt="" class="circle">
             <span class="title">{u.name}</span>
             <p>{u.email}</p>
-            <a href="#!" class="secondary-content"><i class="material-icons">grade</i></a>
+            <span class="secondary-content"><i class="material-icons">grade</i></span>
           </li>
           {/each}
         </ul>
