@@ -2,6 +2,37 @@
   <title>Trade</title>
 </svelte:head>
 
+<script context="module">
+
+  export async function preload(page, session) {
+    const { market } = page.params;
+
+    const res = await this.fetch(`/api/market`);
+    const json = await res.json();
+    const markets = json.results;
+
+    console.log("XXX json:",json);
+    console.log("XXX markets:",markets);
+
+
+
+    let markets_idx = {}
+    markets.forEach(m => {
+      markets_idx[m['name']] = m['id']
+
+      //if (market == m['name']){
+      //  asset = m['asset']
+      //  uoa = m['uoa']
+      //}
+    })
+
+    const market_obj
+
+    return { markets, markets_idx }
+  }
+
+</script>
+
 <script>
   import { format } from 'date-fns'
   import Chart from "chart.js";
@@ -27,8 +58,15 @@
   let selected1 = 'Red';
   let selected2 = 'Small';
 
-  let markets = [];
-  let markets_idx = {};
+  let asset = {}
+  let uoa = {}
+
+  let asset_wallet = {}
+  let uoa_wallet = {}
+
+  export let markets = [];
+  export let markets_idx = {};
+
   let this_market = {
     name: 'undef',
     asset: {
@@ -79,6 +117,7 @@
   onMount(async () => {
     console.log("trade.svelte module onMount");
 
+    /*
     fetch(`/api/market`)
     .then(r => r.json())
     .then(data => {
@@ -86,9 +125,15 @@
       markets = data.results;
       markets.forEach(m => {
         markets_idx[m['name']] = m['id']
-      })
-    });
 
+        if (market == m['name']){
+          asset = m['asset']
+          uoa = m['uoa']
+        }
+      })
+
+    });
+    */
 
 
     var elems = document.querySelectorAll('.tabs');
@@ -140,6 +185,7 @@
 
 
     fetchChart()
+    //runPolling()
   }
 
   function fetchChart() {
@@ -260,22 +306,24 @@
     polling_expired = false;
 
     if (polling_on) {
+      runPolling();
       myInterval = setInterval(() => { runPolling() }, 5*1000);
-      myTimeout = setTimeout(() => { expirePolling() }, 30*1000);
+      myTimeout = setTimeout(() => { expirePolling() }, 15*60*1000); // 15 minutes
     }
     else {
-      window.clearInterval(myInterval);
+      clearInterval(myInterval);
+      clearTimeout(myTimeout);
     }
   }
 
   function expirePolling() {
-    window.clearInterval(myInterval);
+    clearInterval(myInterval);
     polling_on = false;
     polling_expired = true
   }
 
   function runPolling() {
-    polling_inprogress = 2;
+    polling_inprogress = 3;
 
     // &owner=${owner_id}
     fetch(`/api/trade?per_page=30&order=id&market_id=${markets_idx[market]}`)
@@ -289,6 +337,20 @@
     .then(r => r.json())
     .then(data => {
       last24 = data;
+      polling_inprogress -= 1;
+    });
+
+    fetch(`/api/balance?owner_id=${owner_id}`)
+    .then(r => r.json())
+    .then(data => {
+      data.forEach((d) => {
+        if (asset['id'] == d['asset_id']){
+          asset_wallet = d
+        }
+        else if (uoa['id'] == d['asset_id']){
+          uoa_wallet = d
+        }
+      });
       polling_inprogress -= 1;
     });
 
@@ -597,6 +659,32 @@ td, th {
         >Place {side} order</button>
     </div>
     </form>
+
+    <table>
+      <tbody>
+        <tr>
+          <td></td>
+          <td class="right-align">{uoa.name}</td>
+          <td class="right-align">{asset.name}</td>
+        </tr>
+        <tr>
+          <td>Balance</td>
+          <td class="right-align">{uoa_wallet.balance}</td>
+          <td class="right-align">{asset_wallet.balance}</td>
+        </tr>
+        <tr>
+          <td>Reserved</td>
+          <td class="right-align">{uoa_wallet.reserve}</td>
+          <td class="right-align">{asset_wallet.reserve}</td>
+        </tr>
+        <tr>
+          <td>Available</td>
+          <td class="right-align">{uoa_wallet.balance - uoa_wallet.reserve}</td>
+          <td class="right-align">{asset_wallet.balance - asset_wallet.reserve}</td>
+        </tr>
+      </tbody>
+    </table>
+
     </div></div>
 
     <div class="row"><div class="col s12">
