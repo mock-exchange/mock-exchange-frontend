@@ -70,7 +70,7 @@
   let user
   let owner_id;
   let active_orders;
-  let pending_orders; // local state until events run
+  let pending_events; // local state until events run
   let asset_wallet = {}
   let uoa_wallet = {}
 
@@ -286,8 +286,50 @@
     .then(data => {
       active_orders = data.results;
       polling_inprogress -= 1;
+      fetchEvents()
     });
 
+  }
+
+  function fetchEvents() {
+    fetch(`/api/event?order=id.desc&per_page=100&status=new&owner_id=${owner_id}`)
+    .then(r => r.json())
+    .then(data => {
+      pending_events = data.results;
+      polling_inprogress -= 1;
+      processPendingEvents()
+    });
+  }
+
+  function processPendingEvents() {
+    var cancels = []
+    var placed = []
+    pending_events.forEach((e) => {
+      if (e.method == 'cancel-order'){
+        var body = JSON.parse(e.body)
+        cancels.push(body['event_uuid'])
+      }
+      else if (e.method == 'place-order'){
+        var body = JSON.parse(e.body)
+        body['event_uuid'] = e['uuid']
+        body['status'] = e['status']
+        body['created'] = e['created']
+        body['id'] = 0
+        body['pending'] = true
+        placed.push(body)
+      }
+    })
+
+    active_orders.forEach((o) => {
+      o['pending'] = false
+      if (cancels.includes(o['event_uuid'])){
+        o['pending'] = true
+        o['status'] = 'cancel'
+      }
+    })
+    // add new to top of list
+    active_orders = placed.concat(active_orders)
+    console.log("active_orders:",active_orders)
   }
 
   function selectPrice(what) {
@@ -365,6 +407,7 @@
   async function handleOrderCancel(order) {
     var event = {
       method: 'cancel-order',
+      owner_id: owner_id,
       body: JSON.stringify({
         owner_id: owner_id,
         order_id: order.id,
@@ -523,39 +566,48 @@ td, th {
             <th>Order</th>
             <th>Opened</th>
             <th>Type</th>
-            <th>Market</th>
             <th class="right-align">Price</th>
             <th class="right-align">Amount</th>
             <th class="right-align">Bal</th>
             <th class="right-align">Cost</th>
-            <th>Status</th>
+            <th class="right-align">Status</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           {#each active_orders as o }
-          <tr>
-            <td>{ o.id.toString().padStart(8, '0') }</td>
-            <td>{ formats.datetime(o.created) }
-            {#if o.event_uuid}
-            <br />
-            <small>{ o.event_uuid.substring(0,8) }</small>
-            {/if}
+          <tr class:disabled={o.pending}>
+            <td>
+              <span class="mex-id-field">
+              {#if o.event_uuid}
+                { o.event_uuid.substring(0,8) }
+              {:else}
+                { o.id.toString().padStart(8, '0') }
+              {/if}
+              </span>
             </td>
+            <td>{ formats.datetime(o.created) }</td>
             <td>
               <span class="badge white-text darken-2"
                 class:me-sell={o.side === 'sell'}
                 class:me-buy={o.side === 'buy'}
-              >{o.type}</span>
+              >
+              {#if o.type}
+                {o.type}/{o.side}
+              {:else}
+                {o.side}
+              {/if}
+              </span>
             </td>
-            <td>{o.market.name}</td>
             <td class="right-align">{ formats.currency_usd(o.price) }</td>
             <td class="right-align">{ formats.number(o.amount) }</td>
             <td class="right-align">{ formats.number(o.balance) }</td>
             <td class="right-align">&dash;</td>
-            <td>{o.status}</td>
             <td class="right-align">
-              <button on:click={() => handleOrderCancel(o)} class="btn-small">Cancel</button>
+            {o.status}
+            </td>
+            <td class="right-align">
+              <button disabled={o.pending} on:click={() => handleOrderCancel(o)} class="btn-small">Cancel</button>
             </td>
           </tr>
           {/each}
@@ -633,8 +685,8 @@ td, th {
       <tbody>
         <tr>
           <td></td>
-          <td class="right-align">{market.uoa.name}</td>
-          <td class="right-align">{market.asset.name}</td>
+          <td class="right-align">{market.uoa.symbol} Wallet</td>
+          <td class="right-align">{market.asset.symbol} Wallet</td>
         </tr>
         <tr>
           <td>Balance</td>

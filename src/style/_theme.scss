@@ -15,6 +15,8 @@ $highlight-text-color: color("grey", "darken-4");
 
 $card-bg-color: $mex-secondary-bg-color;
 
+$mex-disabled-table-color: darken($off-black, 50%);
+//$mex-disabled-bg-color: #949494 !default;
 
 // Header Styles
 $h1-fontsize: 2rem !default;

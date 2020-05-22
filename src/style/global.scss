@@ -25,6 +25,10 @@ input {
   color: $off-black;
 }
 
+table tr.disabled td {
+  color: $mex-disabled-table-color;
+}
+
 .me-buy {
   background-color: $buy-color;
 }
@@ -70,6 +74,10 @@ input {
 
 .mex-btn-primary {
   //background-color: $primary-color;
+}
+
+.mex-id-field {
+  font-family: monospace;
 }
 
 // autocompleter
