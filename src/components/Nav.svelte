@@ -3,7 +3,7 @@
 
   export let segment
 
-  let app_title = 'MEX'
+  let app_title = 'MOCKEX'
   let user = {}
 
   onMount(async () => {
