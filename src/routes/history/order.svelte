@@ -41,6 +41,7 @@
     var api_query = Object.assign({}, query);
     api_query.owner_id = owner_id
     api_query.status__notin = 'open'
+    api_query.order = 'id.desc'
 
     var qs = querystring.stringify(api_query)
 
