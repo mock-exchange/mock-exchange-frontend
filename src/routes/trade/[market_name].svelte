@@ -296,7 +296,6 @@
     .then(r => r.json())
     .then(data => {
       pending_events = data.results;
-      polling_inprogress -= 1;
       processPendingEvents()
     });
   }
