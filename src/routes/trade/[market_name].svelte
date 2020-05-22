@@ -48,6 +48,12 @@
     change: 0
   }
 
+  let quick_price = {
+    bid: 0,
+    ask: 0,
+    last: 0
+  }
+
   let all_trades;
   let book_chart;
 
@@ -64,6 +70,7 @@
   let user
   let owner_id;
   let active_orders;
+  let pending_orders; // local state until events run
   let asset_wallet = {}
   let uoa_wallet = {}
 
@@ -102,6 +109,9 @@
     .then(r => r.json())
     .then(data => {
       book_chart = {}
+
+      var buy_prices = []
+      var sell_prices = []
       var prices = []
       var amounts = []
       var sell_amounts = []
@@ -113,10 +123,12 @@
         if (element['side'] === 'buy'){
           buy = element['total']
           sell = 0
+          buy_prices.push(element['price'])
         }
         else { // sell
           buy = 0
           sell = element['total']
+          sell_prices.push(element['price'])
         }
         amounts.push(buy);
         sell_amounts.push(sell);
@@ -142,6 +154,9 @@
           data: sell_amounts
         }]
       }
+
+      quick_price['bid'] = buy_prices[buy_prices.length-1] || 0
+      quick_price['ask'] = sell_prices[0] || 0
 
       function getMaxNumberFromArray(array) {
           return array.reduce((a, b) => Math.max(a, b));
@@ -239,6 +254,8 @@
     .then(data => {
       all_trades = data.results;
       polling_inprogress -= 1;
+
+      quick_price['last'] = all_trades[0]['price'] || 0
     });
 
     fetch(`/api/last24/${market.id}`)
@@ -264,7 +281,7 @@
       polling_inprogress -= 1;
     });
 
-    fetch(`/api/order?status__in=open,partial&owner_id=${owner_id}`)
+    fetch(`/api/order?order=id.desc&status__in=open,partial&owner_id=${owner_id}`)
     .then(r => r.json())
     .then(data => {
       active_orders = data.results;
@@ -276,21 +293,34 @@
   function selectPrice(what) {
     var price = document.getElementById('price')
     if (what == 'last'){
-      price.value = 10
+      price.value = quick_price['last']
     }
     else if (what == 'bid'){
-      price.value = 20
+      price.value = quick_price['bid']
     }
     else if (what = 'ask'){
-      price.value = 30
+      price.value = quick_price['ask']
     }
     price.focus()
   }
 
   function selectAmount(percent) {
+    var price = document.getElementById('price')
     var amount = document.getElementById('amount')
-    amount.value = asset_wallet.balance * percent / 100
+    var total = document.getElementById('total')
+
+    // if buy, percent of uoa
+    if (side == 'buy'){
+      total.value = uoa_wallet.balance * percent / 100
+      amount.value = total.value / price.value
+    }
+    else {
+    // if sell, percent of asset
+      amount.value = asset_wallet.balance * percent / 100
+      total.value = amount.value * price.value
+    }
     amount.focus()
+    total.focus()
   }
 
   async function handleSubmit(event) {
@@ -332,22 +362,21 @@
 
   }
 
-  async function handleOrderCancel(order_id) {
-    console.log("handleOrderCancel() order_id:"+order_id);
-    var orderdata = {
-      order_id: order_id,
-      owner_id: owner_id
-    }
-    var formdata = {
+  async function handleOrderCancel(order) {
+    var event = {
       method: 'cancel-order',
-      body: JSON.stringify(orderdata)
+      body: JSON.stringify({
+        owner_id: owner_id,
+        order_id: order.id,
+        event_uuid: order.event_uuid
+      })
     }
     fetch(`/api/event`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(formdata)
+      body: JSON.stringify(event)
     })
     .then(r => r.json())
     .then(data => {
@@ -507,7 +536,12 @@ td, th {
           {#each active_orders as o }
           <tr>
             <td>{ o.id.toString().padStart(8, '0') }</td>
-            <td>{ formats.datetime(o.created) }</td>
+            <td>{ formats.datetime(o.created) }
+            {#if o.event_uuid}
+            <br />
+            <small>{ o.event_uuid.substring(0,8) }</small>
+            {/if}
+            </td>
             <td>
               <span class="badge white-text darken-2"
                 class:me-sell={o.side === 'sell'}
@@ -521,7 +555,7 @@ td, th {
             <td class="right-align">&dash;</td>
             <td>{o.status}</td>
             <td class="right-align">
-              <button on:click={() => handleOrderCancel(o.id)} class="btn-small">Cancel</button>
+              <button on:click={() => handleOrderCancel(o)} class="btn-small">Cancel</button>
             </td>
           </tr>
           {/each}
@@ -555,9 +589,9 @@ td, th {
     </div>
     <div class="row">
         <div class="right-align col s12">
-            <button class="btn-small" on:click={() => selectPrice('bid')}>Bid</button>
-            <button class="btn-small" on:click={() => selectPrice('ask')}>Ask</button>
-            <button class="btn-small" on:click={() => selectPrice('last')}>Last</button>
+            <button type="button" class="btn-small" on:click={() => selectPrice('bid')}>Bid</button>
+            <button type="button" class="btn-small" on:click={() => selectPrice('ask')}>Ask</button>
+            <button type="button" class="btn-small" on:click={() => selectPrice('last')}>Last</button>
         </div>
 
         <div class="input-field col s12">
@@ -573,10 +607,10 @@ td, th {
     </div>
     <div class="row">
         <div class="right-align col s12">
-            <button class="btn-small" on:click={() => selectAmount(25)}>25%</button>
-            <button class="btn-small" on:click={() => selectAmount(50)}>50%</button>
-            <button class="btn-small" on:click={() => selectAmount(75)}>75%</button>
-            <button class="btn-small" on:click={() => selectAmount(100)}>100%</button>
+            <button type="button" class="btn-small" on:click={() => selectAmount(25)}>25%</button>
+            <button type="button" class="btn-small" on:click={() => selectAmount(50)}>50%</button>
+            <button type="button" class="btn-small" on:click={() => selectAmount(75)}>75%</button>
+            <button type="button" class="btn-small" on:click={() => selectAmount(100)}>100%</button>
         </div>
 
         <div class="input-field col s12">
