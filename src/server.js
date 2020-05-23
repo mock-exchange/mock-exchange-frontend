@@ -7,22 +7,30 @@ const { PORT, NODE_ENV } = process.env;
 const dev = NODE_ENV === 'development';
 
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const apiProxy = createProxyMiddleware('/api', {
-  target: 'http://localhost:5000',
-  changeOrigin: true,
-})
-const apiProxy2 = createProxyMiddleware('/foo', {
-  target: 'http://localhost:5000',
-  changeOrigin: true,
-})
+
+function apiProxy(dev){
+  if (!dev){
+    return
+  }
+
+  const proxy1 = createProxyMiddleware('/api', {
+    target: 'http://localhost:5000',
+    changeOrigin: true,
+  })
+  const proxy2 = createProxyMiddleware('/foo', {
+    target: 'http://localhost:5000',
+    changeOrigin: true,
+  })
+
+  return proxy1, proxy2
+}
 
 
 polka() // You can also use Express
   .use(
     compression({ threshold: 0 }),
     sirv('static', { dev }),
-    apiProxy,
-    apiProxy2,
+    //apiProxy(),
     sapper.middleware()
   )
   .listen(PORT, err => {
