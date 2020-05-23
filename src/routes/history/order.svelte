@@ -4,7 +4,6 @@
 
 <script>
   import { onMount } from "svelte";
-  import { owner_name } from '../../store.js'
 
   import querystring from 'querystring';
   import { goto, stores } from '@sapper/app';
@@ -12,7 +11,7 @@
 
   import formats from '../../formats.js'
 
-  let owner_id;
+  let account_id;
   let results;
 
   let parsed;
@@ -35,11 +34,11 @@
 
     user = JSON.parse(sessionStorage.getItem('user'));
     console.log("xx user:",user);
-    owner_id = user.id
-    console.log("owner_id:",owner_id);
+    account_id = user.id
+    console.log("account_id:",account_id);
 
     var api_query = Object.assign({}, query);
-    api_query.owner_id = owner_id
+    api_query.account_id = account_id
     api_query.status__notin = 'open'
     api_query.order = 'id.desc'
 

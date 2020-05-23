@@ -11,7 +11,7 @@
 
   onMount(async () => {
 
-    fetch(`/api/balance?owner_id=${user.id}`)
+    fetch(`/api/balance?account_id=${user.id}`)
     .then(r => r.json())
     .then(data => {
         balances = data;

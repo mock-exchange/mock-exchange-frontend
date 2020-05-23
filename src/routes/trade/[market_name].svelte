@@ -68,7 +68,7 @@
 
   // User specific
   let user
-  let owner_id;
+  let account_id;
   let active_orders;
   let pending_events; // local state until events run
   let asset_wallet = {}
@@ -92,7 +92,7 @@
     console.log('START p rocess.browser');
 
     user = JSON.parse(sessionStorage.getItem('user'));
-    owner_id = user.id
+    account_id = user.id
 
     fetch(`/api/ohlc?interval=${interval}&market_id=${market.id}`)
     .then(r => r.json())
@@ -267,7 +267,7 @@
 
     // User specific stuff only needs to update when the user
     // submits events
-    fetch(`/api/balance?owner_id=${owner_id}`)
+    fetch(`/api/balance?account_id=${account_id}`)
     .then(r => r.json())
     .then(data => {
       data.forEach((d) => {
@@ -281,7 +281,7 @@
       polling_inprogress -= 1;
     });
 
-    fetch(`/api/order?order=id.desc&status__in=open,partial&owner_id=${owner_id}`)
+    fetch(`/api/order?order=id.desc&status__in=open,partial&account_id=${account_id}`)
     .then(r => r.json())
     .then(data => {
       active_orders = data.results;
@@ -292,7 +292,7 @@
   }
 
   function fetchEvents() {
-    fetch(`/api/event?order=id.desc&per_page=100&status=new&owner_id=${owner_id}`)
+    fetch(`/api/event?order=id.desc&per_page=100&status=new&account_id=${account_id}`)
     .then(r => r.json())
     .then(data => {
       pending_events = data.results;
@@ -382,7 +382,7 @@
       price: fe['price'].value,
       amount: fe['amount'].value,
       market_id: 1,
-      owner_id: owner_id,
+      account_id: account_id,
       side: side
     }
     var formdata = {
@@ -406,9 +406,9 @@
   async function handleOrderCancel(order) {
     var event = {
       method: 'cancel-order',
-      owner_id: owner_id,
+      account_id: account_id,
       body: JSON.stringify({
-        owner_id: owner_id,
+        account_id: account_id,
         order_id: order.id,
         event_uuid: order.event_uuid
       })
