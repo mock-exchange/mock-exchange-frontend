@@ -306,11 +306,11 @@
     pending_events.forEach((e) => {
       if (e.method == 'cancel-order'){
         var body = JSON.parse(e.body)
-        cancels.push(body['event_uuid'])
+        cancels.push(body['uuid'])
       }
       else if (e.method == 'place-order'){
         var body = JSON.parse(e.body)
-        body['event_uuid'] = e['uuid']
+        body['uuid'] = e['uuid']
         body['status'] = e['status']
         body['created'] = e['created']
         body['id'] = 0
@@ -321,7 +321,7 @@
 
     active_orders.forEach((o) => {
       o['pending'] = false
-      if (cancels.includes(o['event_uuid'])){
+      if (cancels.includes(o['uuid'])){
         o['pending'] = true
         o['status'] = 'cancel'
       }
@@ -410,7 +410,7 @@
       body: JSON.stringify({
         account_id: account_id,
         order_id: order.id,
-        event_uuid: order.event_uuid
+        uuid: order.uuid
       })
     }
     fetch(`/api/event`, {
@@ -578,8 +578,8 @@ td, th {
           <tr class:disabled={o.pending}>
             <td>
               <span class="mex-id-field">
-              {#if o.event_uuid}
-                { o.event_uuid.substring(0,8) }
+              {#if o.uuid}
+                { o.uuid.substring(0,8) }
               {:else}
                 { o.id.toString().padStart(8, '0') }
               {/if}
