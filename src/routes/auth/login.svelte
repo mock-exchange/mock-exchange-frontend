@@ -24,7 +24,7 @@
     var more_qty = 5 - recent_users.length
 
     if (more_qty > 0){
-      fetch(`/api/owner?per_page=${more_qty}`)
+      fetch(`/api/account?per_page=${more_qty}`)
       .then(r => r.json())
       .then(data => {
         recent_users.push(data.results)
@@ -48,7 +48,7 @@
 
         text = '%' + text.toLowerCase() + '%';
         // you can also use AJAX requests instead of preloaded data
-        fetch(`/api/owner?per_page=20&name__like=${text}`)
+        fetch(`/api/account?per_page=20&name__like=${text}`)
         .then(r => r.json())
         .then(data => {
           var suggestions = []
