@@ -17,7 +17,7 @@
 
     user = JSON.parse(sessionStorage.getItem('user'))
 
-    fetch(`/api/owner/${user.id}`)
+    fetch(`/api/account/${user.id}`)
     .then(r => r.json())
     .then(data => {
         user_fetched = data
@@ -25,7 +25,7 @@
         location = profile['location']
     });
 
-    fetch(`/api/balance?owner_id=${user.id}`)
+    fetch(`/api/balance?account_id=${user.id}`)
     .then(r => r.json())
     .then(data => {
         balances = data;
@@ -45,7 +45,7 @@
     var event = {
       method: 'deposit',
       body: JSON.stringify({
-        owner_id: user.id,
+        account_id: user.id,
         asset_id: b.asset_id,
         amount: amount
       })
@@ -71,7 +71,7 @@
     var event = {
       method: 'withdraw',
       body: JSON.stringify({
-        owner_id: user.id,
+        account_id: user.id,
         asset_id: b.asset_id,
         amount: amount
       })
