@@ -8,6 +8,8 @@
   import querystring from 'querystring';
   import { goto, stores } from '@sapper/app';
   import Pagination from '../../components/Pagination.svelte';
+  import OrdersTable from '../../components/OrdersTable.svelte';
+  import LedgerTable from '../../components/LedgerTable.svelte';
 
   import formats from '../../formats.js'
 
@@ -22,6 +24,8 @@
   let total;
 
   let user
+
+  export let segment
 
   // This runs when the route changes
   $: if (process.browser) {
@@ -44,7 +48,8 @@
 
     var qs = querystring.stringify(api_query)
 
-    fetch(`/api/order?${qs}`)
+
+    fetch(`/api/${segment}?${qs}`)
     .then(r => r.json())
     .then(data => {
       results = data.results;
@@ -69,37 +74,10 @@
 
 </style>
 
-<h1>Order History</h1>
+<h1>{segment} History</h1>
 
 {#if results}
-<table>
-  <thead>
-    <tr>
-      <th>Order</th>
-      <th>Created</th>
-      <th>Market</th>
-      <th>Type</th>
-      <th class="right-align">Price</th>
-      <th class="right-align">Amount</th>
-      <th class="right-align">Balance</th>
-      <th class="right-align">Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    {#each results as r }
-    <tr>
-      <td>{ formats.order_num(r.id) }</td>
-      <td>{ formats.datetime(r.created) }</td>
-      <td>{ r.market.name }</td>
-      <td><span class="badge white-text" class:me-sell={r.side == 'sell'} class:me-buy={r.side == 'buy'}>{r.side }/{ r.type }</span></td>
-      <td class="right-align">{ formats.currency_usd(r.price) }</td>
-      <td class="right-align">{ formats.number(r.amount) }</td>
-      <td class="right-align">{ formats.number(r.balance) }</td>
-      <td class="right-align">{ r.status }</td>
-    </tr>
-    {/each}
-  </tbody>
-</table>
+  <LedgerTable rows={results} />
 {:else}
   <p class="loading">loading...</p>
 {/if}
