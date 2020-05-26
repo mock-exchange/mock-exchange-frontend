@@ -4,52 +4,91 @@
 
 <script>
   import { onMount } from "svelte";
-  import formats from "../formats.js";
+  import formats from '../formats.js';
 
-  let balances;
-  let user = JSON.parse(sessionStorage.getItem('user'))
+  let assets;
+  let markets;
 
   onMount(async () => {
-
-    fetch(`/api/balance?account_id=${user.id}`)
+    fetch(`/api/last24`)
     .then(r => r.json())
     .then(data => {
-        balances = data;
+      markets = data
     });
+    fetch(`/api/asset`)
+    .then(r => r.json())
+    .then(data => {
+      assets = data.results;
+    });
+
   })
 </script>
 
-<h1>Balances for {user.name}</h1>
 
+<h1>Markets</h1>
 
-{#if balances}
 <table>
-  <thead>
+<thead>
+  <tr>
+    <th>Market</th>
+    <th>24h Volume</th>
+    <th>24h Price</th>
+    <th>24h Open</th>
+    <th>24h High</th>
+    <th>24h Low</th>
+    <th>Last Price</th>
+    <th>Avg Price</th>
+  </tr>
+</thead>
+
+<tbody>
+  {#if markets}
+    {#each markets as m }
     <tr>
-      <th>Asset</th>
-      <th class="right-align">Balance</th>
-      <th class="right-align">Last Price</th>
-      <th class="right-align">Value</th>
-    </tr>
-  </thead>
-  <tbody>
-    {#each balances as o }
-    <tr>
-      <td><i class="{o.icon} fa-2x fa-fw"></i> {o.name} ({o.symbol})</td>
-      <td class="right-align">{ formats.number(o.balance) }</td>
-      {#if o.symbol === 'USD'}
-        <td class="right-align">&dash;</td>
-        <td class="right-align">{ formats.currency_usd(o.balance) }</td>
-      {:else}
-        <td class="right-align">{ formats.currency_usd(o.last_price) }</td>
-        <td class="right-align">{ formats.currency_usd(o.usd_value) }</td>
-      {/if}
+    <td><a href="/trade/{m.name}">{m.name}</a></td>
+    <td>{ formats.compact_number(m.volume) }</td>
+    <td
+      class:red-text={m.change < 0}
+      class:green-text={m.change > 0}
+    >{ formats.percent(m.change) }</td>
+    <td>{ formats.currency_usd(m.open) }</td>
+    <td>{ formats.currency_usd(m.high) }</td>
+    <td>{ formats.currency_usd(m.low) }</td>
+    <td>{ formats.currency_usd(m.close) }</td>
+    <td>{ formats.currency_usd(m.avg_price) }</td>
     </tr>
     {/each}
-  </tbody>
+  {:else}
+    <tr class="loading"><td colspan="7">loading...</td></tr>
+  {/if}
+</tbody>
 </table>
-{:else}
-  <p class="loading">loading...</p>
-{/if}
+
+
+<div>
+  <button class="btn">New Asset</button>
+</div>
+
+<table>
+<thead>
+  <tr>
+    <th>Asset</th>
+    <th>something</th>
+  </tr>
+</thead>
+
+<tbody>
+  {#if assets}
+    {#each assets as asset }
+    <tr>
+    <td>{asset.name}</td>
+    <td>..</td>
+    </tr>
+    {/each}
+  {:else}
+    <tr class="loading"><td colspan="2">loading...</td></tr>
+  {/if}
+</tbody>
+</table>
 
 
