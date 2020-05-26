@@ -42,6 +42,23 @@ export default {
     }
   },
 
+  currency(value, asset) {
+    if (!asset){
+      asset = {
+        symbol: 'USD',
+        scale: 2
+      }
+    }
+    let f = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: asset.symbol,
+      minimumFractionDigits: asset.scale,
+      maximumFractionDigits: asset.scale
+    })
+    console.log("currency asset:",asset)
+    return f.format(value)
+  },
+
   currency_btc(value) {
     return 'fix me'
   },
@@ -50,8 +67,11 @@ export default {
     return percentFormat.format(value)
   },
 
-  number(value) {
-    return numberFormat.format(value)
+  number(value, scale = 0) {
+    return Intl.NumberFormat(locale, {
+      minimumFractionDigits: scale,
+      maximumFractionDigits: scale
+    }).format(value)
   },
 
   compact_number(value) {
