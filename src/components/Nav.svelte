@@ -1,10 +1,25 @@
 <script>
   import { onMount } from "svelte"
 
+  import { lastMarket } from '../store.js'
+
   export let segment
 
   let app_title = 'MOCKEX'
   let user = {}
+
+  let last_market
+  const unsubscribe = lastMarket.subscribe(value => {
+    last_market = value;
+  });
+
+  let menu
+  $: menu = [
+    { label: 'Trade', url: `trade/${last_market}`, segment: 'trade'},
+    { label: 'Orders', url: 'history/order', segment: 'order' },
+    { label: 'Trades', url: 'history/trades', segment: 'trades' },
+    { label: 'Ledger', url: 'history/ledger', segment: 'ledger' }
+  ]
 
   onMount(async () => {
     var u = sessionStorage.getItem('user')
@@ -41,9 +56,11 @@
     <a href="" data-target="mobile-menu" class="sidenav-trigger"><i class="material-icons">menu</i></a>
     <ul class="left hide-on-med-and-down">
       <li><a href="" class="mex-brand-logo"><i class="material-icons left">repeat</i>{app_title}</a></li>
-      <li class='{segment === "trade" ? "active" : undefined}'><a href="trade/BTCUSD">Trade</a></li>
-      <li class='{segment === "history" ? "active" : undefined}'><a href="history/order">History</a></li>
-      <li class='{segment === "market" ? "active" : undefined}'><a href="market">Markets</a></li>
+      {#each menu as m}
+        <li class='{segment === m.segment ? "active" : undefined}'>
+          <a href={m.url}>{m.label}</a>
+        </li>
+      {/each}
     </ul>
 
     <ul class="right hide-on-med-and-down">
@@ -61,9 +78,11 @@
   <li>
       <a href="#!" style="color:black;"><i class="material-icons left">repeat</i>{app_title}</a>
   </li>
-  <li><a href="trade/BTCUSD">Trade</a></li>
-  <li><a href="account">History</a></li>
-  <li><a href="market">Markets</a></li>
+  {#each menu as m}
+    <li class='{segment === m.segment ? "active" : undefined}'>
+      <a href={m.url}>{m.label}</a>
+    </li>
+  {/each}
   <li><a href="owner"><i class="material-icons left">person</i>{user.name}</a></li>
 </ul>
 

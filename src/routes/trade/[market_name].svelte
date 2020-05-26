@@ -25,6 +25,7 @@
   import { onMount } from "svelte";
   import { goto, stores } from '@sapper/app';
   import Chart from "chart.js";
+  import { lastMarket } from '../../store.js'
   import formats from '../../formats.js'
   import { makeChart, updateChart } from '../../lightchart.js'
 
@@ -90,6 +91,8 @@
   // This runs when the route changes
   $: if (process.browser) {
     console.log('START p rocess.browser');
+
+    lastMarket.set(market.name)
 
     user = JSON.parse(sessionStorage.getItem('user'));
     account_id = user.id
@@ -378,23 +381,23 @@
 
     var fe = document.forms.order_form.elements;
 
-    var orderdata = {
-      price: fe['price'].value,
-      amount: fe['amount'].value,
-      market_id: 1,
-      account_id: account_id,
-      side: side
-    }
-    var formdata = {
+    var event = {
       method: 'place-order',
-      body: JSON.stringify(orderdata)
+      account_id: account_id,
+      body: JSON.stringify({
+        price: fe['price'].value,
+        amount: fe['amount'].value,
+        market_id: 1,
+        account_id: account_id,
+        side: side
+      })
     }
     fetch(`/api/event`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(formdata)
+      body: JSON.stringify(event)
     })
     .then(r => r.json())
     .then(data => {
