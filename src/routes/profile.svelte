@@ -8,22 +8,11 @@
   import { goto, stores } from '@sapper/app';
 
   let user = {}
-  let user_fetched = {}
-  let profile = {}
-  let location = {}
   let balances;
 
   onMount(() => {
 
     user = JSON.parse(sessionStorage.getItem('user'))
-
-    fetch(`/api/account/${user.id}`)
-    .then(r => r.json())
-    .then(data => {
-        user_fetched = data
-        profile = JSON.parse(user_fetched['profile'])
-        location = profile['location']
-    });
 
     fetch(`/api/balance?account_id=${user.id}`)
     .then(r => r.json())
@@ -92,23 +81,8 @@
 
 </script>
 
-<div id="foox"></div>
 
-<div class="row">
-  <div class="col s2">
-    <img src="/foo{user.picture}" alt="" class="circle responsive-img">
-  </div>
-  <div class="col s10">
-    <h2>{user.name}</h2>
-    <p>{user.email}</p>
-    <span><i class="material-icons">location_on</i> {location.city}</span>
-    <span><i class="material-icons">phone</i> {profile.phone}</span>
-  </div>
-</div>
-
-
-
-<h2>Balances for {user.name}</h2>
+<h1>Balances for {user.name}</h1>
 
 
 {#if balances}
@@ -126,7 +100,7 @@
     {#each balances as o, i}
     <tr>
       <td><i class="{o.icon} fa-2x fa-fw"></i> {o.name} ({o.symbol})</td>
-      <td class="right-align">{ formats.number(o.balance) }</td>
+      <td class="right-align">{ formats.number(o.balance, o.scale) }</td>
       {#if o.symbol === 'USD'}
         <td class="right-align">&dash;</td>
         <td class="right-align">{ formats.currency_usd(o.balance) }</td>
