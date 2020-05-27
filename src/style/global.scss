@@ -72,6 +72,10 @@ table tr.disabled td {
   flex: 1;
 }
 
+button.active {
+  background-color: $primary-color;
+}
+
 .mex-btn-primary {
   //background-color: $primary-color;
 }
