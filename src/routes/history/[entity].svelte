@@ -3,21 +3,17 @@
 </svelte:head>
 
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
+  import { goto, stores } from '@sapper/app';
 
   import querystring from 'querystring';
-  import { goto, stores } from '@sapper/app';
+
   import Pagination from '../../components/Pagination.svelte';
   import OrderTable from '../../components/OrderTable.svelte';
   import TradeTable from '../../components/TradeTable.svelte';
   import LedgerTable from '../../components/LedgerTable.svelte';
 
   import formats from '../../formats.js'
-
-  let account_id;
-  let results;
-
-  let parsed;
 
   const entities = {
     order: {
@@ -37,51 +33,58 @@
     }
   }
 
+  let user;
+  let results;
 
+
+  // Pagination
   let total
 
-  let user
   let entity
-
   let entity_obj
-
-  /*
-  if (typeof window !== "undefined" && typeof document !== "undefined") {
-    page.subscribe(({ path, params, query }) => {
-      console.log("page.subscribe path:",path," params:",params)
-      entity = params.entity
-      entity_obj = entities[entity]
-      onPageChange()
-    })
-  }
-  */
 
 
   let path
   let params
   let query
-  let page
+
+
+  const { page } = stores()
+
+  let unsubscribe
+
+  if (typeof window !== "undefined" && typeof document !== "undefined") {
+
+    console.log('page.subscribe()')
+    unsubscribe = page.subscribe((p) => {
+      console.log('subscribe path:', p.path, ', params:',p.params, ', query:',p.query);
+      params = p.params;
+      query = p.query
+
+      entity = params.entity
+      entity_obj = entities[entity]
+      onPageChange()
+
+    });
+
+  }
 
   onMount(async () => {
     console.log("onMount");
   })
 
+  onDestroy(() => { unsubscribe(); console.log('unsubscribe'); });
 
-  // This runs when the route changes
-  $: if (process.browser) {
-    page = stores().page
-
+  /*
+    const { page } = stores()
     path = $page.path;
     params = $page.params;
     query = $page.query;
-
-    console.log("pro cess.browser path:",path," params:",params)
-    entity = params.entity
-    entity_obj = entities[entity]
-    onPageChange()
-  }
+  */
 
   function onPageChange() {
+
+    user = JSON.parse(sessionStorage.getItem('user'));
 
     if (!query.page){
       query.page = 1
@@ -90,11 +93,9 @@
       query.per_page = 10
     }
 
-    user = JSON.parse(sessionStorage.getItem('user'));
-    account_id = user.id
 
     var api_query = Object.assign({}, query);
-    api_query.account_id = account_id
+    api_query.account_id = user.id
     api_query.order = 'id.desc'
 
     if ('api_params' in entity_obj){
@@ -123,14 +124,7 @@
     goto(`${path}?${qs}`);
   }
 
-  const xxnext = () => {
-    goto(`my-table?p=${$page.query.p + 1}`);
-  }
 </script>
-
-<style>
-
-</style>
 
 <h1>{entities[entity].title}</h1>
 
