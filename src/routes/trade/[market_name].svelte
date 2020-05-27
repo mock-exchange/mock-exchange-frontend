@@ -24,16 +24,18 @@
 <script>
   import { onMount } from "svelte";
   import { goto, stores } from '@sapper/app';
+
   import Chart from "chart.js";
+  import { makeChart, updateChart } from '../../lightchart.js'
+
   import { lastMarket } from '../../store.js'
   import formats from '../../formats.js'
-  import { makeChart, updateChart } from '../../lightchart.js'
 
   // Things depend on this stuff being fetched
   export let market = {};
   export let markets = [];
 
-  let intervals = ['1m','5m','15m','1h','6h','1d']
+  const intervals = ['1m','5m','15m','1h','6h','1d']
   let interval = '15m'
 
   let pollingInterval;
@@ -88,13 +90,10 @@
     makeChart('chart');
   })
 
-  // This runs when the route changes
   $: if (process.browser) {
-    console.log('START p rocess.browser');
 
     lastMarket.set(market.name)
-
-    user = JSON.parse(sessionStorage.getItem('user'));
+    user = JSON.parse(sessionStorage.getItem('user'))
     account_id = user.id
 
     fetch(`/api/ohlc?interval=${interval}&market_id=${market.id}`)
@@ -234,7 +233,7 @@
 
     if (polling_on) {
       runPolling();
-      pollingInterval = setInterval(() => { runPolling() }, 5*1000);
+      pollingInterval = setInterval(() => { runPolling() }, 2*1000);
       pollingTimeout = setTimeout(() => { expirePolling() }, 15*60*1000); // 15 minutes
     }
     else {
@@ -430,46 +429,48 @@
 
   }
 </script>
+
 <style>
-td, th {
-  padding:0;
-}
+  td, th {
+    padding:0;
+  }
 
-.trade_topbar {
-    margin: 1em 0;
-}
-.trade_topbar .card-panel {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 24px 5px 0;
-    box-shadow: none;
-    background-color: transparent;
-}
-.trade_topbar .card-panel > div {
-  text-align: center;
-}
+  .trade_topbar {
+      margin: 1em 0;
+  }
+  .trade_topbar .card-panel {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 24px 5px 0;
+      box-shadow: none;
+      background-color: transparent;
+  }
+  .trade_topbar .card-panel > div {
+    text-align: center;
+  }
 
-.columns > * {
-    margin: 1em;
+  .columns > * {
+      margin: 1em;
 
-}
+  }
 
-.rightside {
-    padding-top: 1em;
-}
-.rightside .btn-small {
-    line-height: 20px;
-    height: 20px;
-}
+  .rightside {
+      padding-top: 1em;
+  }
+  .rightside .btn-small {
+      line-height: 20px;
+      height: 20px;
+  }
 
-.chart-container {
-  position: relative;
-  height:150px;
-  width:100%;
-}
+  .chart-container {
+    position: relative;
+    height:150px;
+    width:100%;
+  }
 </style>
+
 <div class="row">
   <div class="col s9">
 
@@ -532,7 +533,7 @@ td, th {
       </div>
       <div class="col s6 right-align">
         {#if polling_inprogress}
-          <span ><i class="fas fa-spinner fa-spin"></i> Polling in progress..</span>
+          <span ><i class="fas fa-spinner fa-spin"></i> Polling..</span>
         {:else if polling_expired}
           <span>Polling expired.</span>
         {/if}
@@ -631,11 +632,11 @@ td, th {
 
     <div class="row">
       <div class="col s12 mex-btn-group mex-btn-group-justified">
-        <button on:click={() => side = 'buy'}
+        <button type="button" on:click={() => side = 'buy'}
           class="btn"
           class:green={side === 'buy'}
         >Buy</button>
-        <button on:click={() => side = 'sell'}
+        <button type="button" on:click={() => side = 'sell'}
           class="btn"
           class:red={side === 'sell'}
         >Sell</button>
@@ -739,10 +740,6 @@ td, th {
       {/if}
     </div></div>
 
-
-
-
   </div>
 </div>
-
 
