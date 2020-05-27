@@ -7,17 +7,12 @@ let candleSeries;
 let volumeSeries;
 
 export function updateChart(data) {
-  console.log('updateChart called!');
-  console.log(data);
-  console.log('candleSeries:',candleSeries);
   candleSeries.setData(data);
-  //volumeSeries.setData(data);
+  volumeSeries.setData(data);
 }
 
 export function makeChart(id) {
   const el = document.getElementById(id);
-
-  console.log("makeChart() width:"+el.offsetWidth);
 
   /*
   var red = 'rgba(255, 0, 0, 1)';
@@ -73,7 +68,6 @@ export function makeChart(id) {
     wickDownColor: red,
   });
 
-/*
   volumeSeries = chart.addHistogramSeries({
     color: '#666666',
     lineWidth: 2,
@@ -86,5 +80,4 @@ export function makeChart(id) {
       bottom: 0,
     },
   });
-*/
 }
