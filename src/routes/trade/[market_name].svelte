@@ -22,7 +22,7 @@
 </script>
 
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { goto, stores } from '@sapper/app';
 
   import Chart from "chart.js";
@@ -58,7 +58,6 @@
   }
 
   let all_trades;
-  let book_chart;
   let chart;
 
   let polling_on = false
@@ -100,8 +99,14 @@
     account_id = user.id
 
 
-    runPolling()
+    togglePolling();
   }
+
+  onDestroy(async () => {
+    clearInterval(pollingInterval);
+    clearTimeout(pollingTimeout);
+    console.log("polling cleared");
+  })
 
   function makeBookChart(){
     var ctx = document.getElementById("book_chart").getContext("2d");
@@ -182,8 +187,10 @@
     fetch(`/api/book?market_id=${market.id}`)
     .then(r => r.json())
     .then(data => {
-      book_chart = {}
-
+      polling_inprogress -= 1;
+      if (!data.length){
+        return;
+      }
       var buy_prices = []
       var sell_prices = []
       var prices = []
@@ -207,27 +214,6 @@
         amounts.push(buy);
         sell_amounts.push(sell);
       });
-      book_chart = {
-        labels: prices,
-        datasets: [{
-          yAxisID: 'buy-side',
-          label: "Buy Amounts",
-          backgroundColor: green,
-          borderColor: green,
-          borderWidth: 0,
-          steppedLine: 'after',
-          data: amounts
-        },
-        {
-          yAxisID: 'sell-side',
-          label: "Sell Amounts",
-          backgroundColor: red,
-          borderColor: red,
-          borderWidth: 0,
-          steppedLine: 'before',
-          data: sell_amounts
-        }]
-      }
 
       chart.data.labels = prices;
       chart.data.datasets[0].data = amounts;
@@ -245,10 +231,8 @@
           getMaxNumberFromArray(sell_amounts)
       );
 
-      //chart.options.data = book_chart;
       chart.options.scales.yAxes[0].ticks.max = maxYTick;
       chart.options.scales.yAxes[1].ticks.max = maxYTick;
-      console.log("update book chart!")
       chart.update();
 
     });
@@ -276,7 +260,7 @@
   }
 
   function runPolling() {
-    polling_inprogress = 5;
+    polling_inprogress = 6;
 
     fetch(`/api/trade?per_page=30&order=id&market_id=${market.id}`)
     .then(r => r.json())
@@ -284,7 +268,9 @@
       all_trades = data.results;
       polling_inprogress -= 1;
 
-      quick_price['last'] = all_trades[0]['price'] || 0
+      if (all_trades.length){
+        quick_price['last'] = all_trades[0]['price'] || 0
+      }
     });
 
     fetch(`/api/ohlc?interval=${interval}&market_id=${market.id}`)
@@ -366,7 +352,6 @@
     })
     // add new to top of list
     active_orders = placed.concat(active_orders)
-    console.log("active_orders:",active_orders)
   }
 
   function selectPrice(what) {
@@ -402,15 +387,6 @@
     total.focus()
   }
 
-  async function handleSubmit(event) {
-    console.log('market:'+market);
-  }
-
-  async function navigateMarket(m) {
-    console.log('navigateMarket')
-    goto(`/trade/${m}`)
-  }
-
   async function handleOrderSubmit(e) {
     console.log("handleOrderSubmit")
 
@@ -422,7 +398,7 @@
       body: JSON.stringify({
         price: fe['price'].value,
         amount: fe['amount'].value,
-        market_id: 1,
+        market_id: market.id,
         account_id: account_id,
         side: side
       })

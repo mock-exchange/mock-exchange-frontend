@@ -30,6 +30,7 @@
     "autoprefixer": "^9.7.6",
     "chart.js": "^2.9.3",
     "date-fns": "^2.13.0",
+    "date-fns-tz": "^1.0.10",
     "http-proxy-middleware": "^1.0.3",
     "lightweight-charts": "^2.0.0",
     "node-sass": "^4.14.1",
