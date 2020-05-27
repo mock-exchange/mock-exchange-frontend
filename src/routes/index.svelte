@@ -6,7 +6,6 @@
   import { onMount } from "svelte";
   import formats from '../formats.js';
 
-  let assets;
   let markets;
 
   onMount(async () => {
@@ -15,15 +14,8 @@
     .then(data => {
       markets = data
     });
-    fetch(`/api/asset`)
-    .then(r => r.json())
-    .then(data => {
-      assets = data.results;
-    });
-
   })
 </script>
-
 
 <h1>Markets</h1>
 
@@ -60,33 +52,6 @@
     {/each}
   {:else}
     <tr class="loading"><td colspan="7">loading...</td></tr>
-  {/if}
-</tbody>
-</table>
-
-
-<div>
-  <button class="btn">New Asset</button>
-</div>
-
-<table>
-<thead>
-  <tr>
-    <th>Asset</th>
-    <th>something</th>
-  </tr>
-</thead>
-
-<tbody>
-  {#if assets}
-    {#each assets as asset }
-    <tr>
-    <td>{asset.name}</td>
-    <td>..</td>
-    </tr>
-    {/each}
-  {:else}
-    <tr class="loading"><td colspan="2">loading...</td></tr>
   {/if}
 </tbody>
 </table>
