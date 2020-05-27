@@ -59,6 +59,7 @@
 
   let all_trades;
   let book_chart;
+  let chart;
 
   let polling_on = false
   let polling_inprogress = 0
@@ -87,18 +88,94 @@
       constrainWidth: false
     });
 
+    makeBookChart();
     makeChart('chart');
   })
 
   $: if (process.browser) {
+    console.log("proce ss.browser")
 
     lastMarket.set(market.name)
     user = JSON.parse(sessionStorage.getItem('user'))
     account_id = user.id
 
 
-    fetchChart()
     runPolling()
+  }
+
+  function makeBookChart(){
+    var ctx = document.getElementById("book_chart").getContext("2d");
+    var maxYTick = 100
+
+    var options = {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [{
+          yAxisID: 'buy-side',
+          label: "Buy Amounts",
+          backgroundColor: green,
+          borderColor: green,
+          borderWidth: 0,
+          steppedLine: 'after',
+          data: []
+        },
+        {
+          yAxisID: 'sell-side',
+          label: "Sell Amounts",
+          backgroundColor: red,
+          borderColor: red,
+          borderWidth: 0,
+          steppedLine: 'before',
+          data: []
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: { display: false },
+        elements: {
+            point: {
+                radius: 0
+            }
+        },
+        scales: {
+            yAxes: [{
+                id: 'sell-side',
+                position: 'right',
+                type: 'linear',
+                ticks: {
+                    max: maxYTick,
+                    callback: function(value, index, values) {
+                        return formats.compact_number(value);
+                    }
+                }
+            }, {
+                id: 'buy-side',
+                position: 'left',
+                type: 'linear',
+                ticks: {
+                    max: maxYTick,
+                    callback: function(value, index, values) {
+                        return formats.compact_number(value);
+                    }
+                }
+            }],
+            xAxes: [{
+                ticks: {
+                    autoSkip: true,
+                    autoSkipPadding: 10,
+                    maxRotation: 0,
+                    callback: function(value, index, values) {
+                        return formats.currency_usd(value);
+                    }
+                }
+            }]
+        }
+      }
+    }
+    chart = new Chart(ctx, options)
+
   }
 
   function fetchChart() {
@@ -152,6 +229,10 @@
         }]
       }
 
+      chart.data.labels = prices;
+      chart.data.datasets[0].data = amounts;
+      chart.data.datasets[1].data = sell_amounts;
+
       quick_price['bid'] = buy_prices[buy_prices.length-1] || 0
       quick_price['ask'] = sell_prices[0] || 0
 
@@ -164,61 +245,12 @@
           getMaxNumberFromArray(sell_amounts)
       );
 
-      renderChart(maxYTick)
-    });
+      //chart.options.data = book_chart;
+      chart.options.scales.yAxes[0].ticks.max = maxYTick;
+      chart.options.scales.yAxes[1].ticks.max = maxYTick;
+      console.log("update book chart!")
+      chart.update();
 
-
-  }
-
-  function renderChart(maxYTick) {
-
-    var ctx = document.getElementById("book_chart").getContext("2d");
-    var chart = new Chart(ctx, {
-      type: "line",
-      data: book_chart,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        legend: { display: false },
-        elements: {
-            point: {
-                radius: 0
-            }
-        },
-        scales: {
-            yAxes: [{
-                id: 'sell-side',
-                position: 'right',
-                type: 'linear',
-                ticks: {
-                    max: maxYTick,
-                    callback: function(value, index, values) {
-                        return formats.compact_number(value);
-                    }
-                }
-            }, {
-                id: 'buy-side',
-                position: 'left',
-                type: 'linear',
-                ticks: {
-                    max: maxYTick,
-                    callback: function(value, index, values) {
-                        return formats.compact_number(value);
-                    }
-                }
-            }],
-            xAxes: [{
-                ticks: {
-                    autoSkip: true,
-                    autoSkipPadding: 10,
-                    maxRotation: 0,
-                    callback: function(value, index, values) {
-                        return formats.currency_usd(value);
-                    }
-                }
-            }]
-        }
-      }
     });
   }
 
@@ -261,6 +293,8 @@
       polling_inprogress -= 1;
       updateChart(data);
     });
+
+    fetchChart()
 
     fetch(`/api/last24/${market.id}`)
     .then(r => r.json())
