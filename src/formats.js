@@ -22,11 +22,11 @@ const compactNumberFormat = new Intl.NumberFormat(locale, {
 
 export default {
   datetime(dt) {
-    return format(Date.parse(dt), 'yyyy-mm-dd hh:mm:ss aaa')
+    return format(Date.parse(dt), 'yyy-MM-dd hh:mm:ss aaa');
   },
 
   date(dt) {
-    return format(Date.parse(dt), 'yyyy-mm-dd')
+    return format(Date.parse(dt), 'yyyy-MM-dd')
   },
 
   time(dt) {
