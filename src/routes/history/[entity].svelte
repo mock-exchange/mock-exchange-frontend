@@ -1,5 +1,5 @@
 <svelte:head>
-    <title>Order History</title>
+    <title>{entity.title}</title>
 </svelte:head>
 
 <script>
@@ -15,7 +15,7 @@
 
   import formats from '../../formats.js'
 
-  const entities = {
+  const config = {
     order: {
       title: 'Orders',
       base_url: '/api/order',
@@ -33,56 +33,24 @@
     }
   }
 
-  let user;
-  let results;
-
+  let user
 
   // Pagination
   let total
+  let results
 
-  let entity
-  let entity_obj
+  let entity_name
+  let entity = {}
 
-
-  let path
-  let params
+  let page
   let query
 
+  $: if (process.browser) {
+    page = stores().page
+    query = $page.query
 
-  const { page } = stores()
-
-  let unsubscribe
-
-  if (typeof window !== "undefined" && typeof document !== "undefined") {
-
-    console.log('page.subscribe()')
-    unsubscribe = page.subscribe((p) => {
-      console.log('subscribe path:', p.path, ', params:',p.params, ', query:',p.query);
-      params = p.params;
-      query = p.query
-
-      entity = params.entity
-      entity_obj = entities[entity]
-      onPageChange()
-
-    });
-
-  }
-
-  onMount(async () => {
-    console.log("onMount");
-  })
-
-  onDestroy(() => { unsubscribe(); console.log('unsubscribe'); });
-
-  /*
-    const { page } = stores()
-    path = $page.path;
-    params = $page.params;
-    query = $page.query;
-  */
-
-  function onPageChange() {
+    entity_name = $page.params.entity
+    entity = config[entity_name]
 
     user = JSON.parse(sessionStorage.getItem('user'));
 
@@ -93,21 +61,20 @@
       query.per_page = 10
     }
 
-
     var api_query = Object.assign({}, query);
     api_query.account_id = user.id
     api_query.order = 'id.desc'
 
-    if ('api_params' in entity_obj){
-      Object.keys(entity_obj['api_params']).forEach((k) => {
-        api_query[k] = entity_obj['api_params'][k]
+    if ('api_params' in entity){
+      Object.keys(entity['api_params']).forEach((k) => {
+        api_query[k] = entity['api_params'][k]
       })
     }
 
     var qs = querystring.stringify(api_query)
 
     results = undefined
-    var url = entities[entity].base_url
+    var url = entity.base_url
     fetch(`${url}?${qs}`)
     .then(r => r.json())
     .then(data => {
@@ -117,7 +84,6 @@
   }
 
   function pageChanged(event) {
-    console.log('pageChanged() page:' + event.detail.page)
     query.page = event.detail.page
     var qs = querystring.stringify(query)
 
@@ -126,14 +92,14 @@
 
 </script>
 
-<h1>{entities[entity].title}</h1>
+<h1>{entity.title}</h1>
 
 {#if results}
-  {#if entity == 'order'}
+  {#if entity_name == 'order'}
     <OrderTable rows={results} />
-  {:else if entity == 'trades'}
+  {:else if entity_name == 'trades'}
     <TradeTable rows={results} />
-  {:else if entity == 'ledger'}
+  {:else if entity_name == 'ledger'}
     <LedgerTable rows={results} />
   {/if}
 {:else}
