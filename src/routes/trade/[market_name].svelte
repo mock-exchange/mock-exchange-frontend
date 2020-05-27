@@ -96,11 +96,6 @@
     user = JSON.parse(sessionStorage.getItem('user'))
     account_id = user.id
 
-    fetch(`/api/ohlc?interval=${interval}&market_id=${market.id}`)
-    .then(r => r.json())
-    .then(data => {
-      updateChart(data);
-    });
 
     fetchChart()
     runPolling()
@@ -249,7 +244,7 @@
   }
 
   function runPolling() {
-    polling_inprogress = 4;
+    polling_inprogress = 5;
 
     fetch(`/api/trade?per_page=30&order=id&market_id=${market.id}`)
     .then(r => r.json())
@@ -258,6 +253,13 @@
       polling_inprogress -= 1;
 
       quick_price['last'] = all_trades[0]['price'] || 0
+    });
+
+    fetch(`/api/ohlc?interval=${interval}&market_id=${market.id}`)
+    .then(r => r.json())
+    .then(data => {
+      polling_inprogress -= 1;
+      updateChart(data);
     });
 
     fetch(`/api/last24/${market.id}`)
