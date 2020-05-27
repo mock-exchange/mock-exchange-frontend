@@ -49,7 +49,7 @@
     page = stores().page
     query = $page.query
 
-    entity_name = $page.params.entity
+    entity_name = $page.params.entity_name
     entity = config[entity_name]
 
     user = JSON.parse(sessionStorage.getItem('user'));
@@ -87,7 +87,7 @@
     query.page = event.detail.page
     var qs = querystring.stringify(query)
 
-    goto(`${path}?${qs}`);
+    goto(`${$page.path}?${qs}`);
   }
 
 </script>
