@@ -305,7 +305,7 @@
       polling_inprogress -= 1;
     });
 
-    fetch(`/api/order?order=id.desc&status__in=open,partial&account_id=${account_id}`)
+    fetch(`/api/order?order=id.desc&status__in=open,partial&account_id=${account_id}&market_id=${market.id}`)
     .then(r => r.json())
     .then(data => {
       active_orders = data.results;
