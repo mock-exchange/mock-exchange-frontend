@@ -393,12 +393,12 @@
 
     // if buy, percent of uoa
     if (side == 'buy'){
-      total.value = uoa_wallet.balance * percent / 100
+      total.value = uoa_wallet.available * percent / 100
       amount.value = total.value / price.value
     }
     else {
     // if sell, percent of asset
-      amount.value = asset_wallet.balance * percent / 100
+      amount.value = asset_wallet.available * percent / 100
       total.value = amount.value * price.value
     }
     amount.focus()
@@ -742,11 +742,11 @@
         </tr>
         <tr>
           <td>Available</td>
-          <td class="right-align" title={uoa_wallet.balance - uoa_wallet.reserve}>
-            {formats.balance(uoa_wallet.balance - uoa_wallet.reserve)}
+          <td class="right-align" title={uoa_wallet.available}>
+            {formats.balance(uoa_wallet.available)}
           </td>
-          <td class="right-align" title={asset_wallet.balance - asset_wallet.reserve}>
-            {formats.balance(asset_wallet.balance - asset_wallet.reserve)}
+          <td class="right-align" title={asset_wallet.available}>
+            {formats.balance(asset_wallet.available)}
           </td>
         </tr>
       </tbody>
