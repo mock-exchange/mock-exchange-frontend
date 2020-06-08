@@ -1,5 +1,5 @@
 // Common formats
-import { format } from 'date-fns'
+import { format, formatDistanceStrict } from 'date-fns'
 
 const locale = 'en-US'
 
@@ -21,6 +21,10 @@ const compactNumberFormat = new Intl.NumberFormat(locale, {
   minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
 export default {
+  relative_dt(dt1, dt2){
+    return formatDistanceStrict(dt1, dt2)
+  },
+
   datetime(dt) {
     return format(Date.parse(dt), 'yyy-MM-dd hh:mm:ss aaa');
   },

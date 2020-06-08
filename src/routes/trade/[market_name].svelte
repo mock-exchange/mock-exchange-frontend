@@ -35,7 +35,7 @@
   export let market = {};
   export let markets = [];
 
-  const intervals = ['1m','5m','15m','1h','6h','1d']
+  const intervals = ['5m','15m','1h','6h','1d']
   let interval = '15m'
 
   let pollingInterval;
@@ -63,6 +63,8 @@
   let polling_on = false
   let polling_inprogress = 0
   let polling_expired = false
+  let polling_last_dt = new Date()
+  let timer_dt = new Date()
 
   let red = 'rgba(228, 78, 93, 1)';
   let green = 'rgba(95, 186, 137, 1)';
@@ -86,6 +88,10 @@
       coverTrigger: false,
       constrainWidth: false
     });
+
+    setInterval(() => {
+      timer_dt = new Date()
+    }, 1000)
 
     makeBookChart();
     makeChart('chart');
@@ -244,10 +250,11 @@
 
     if (polling_on) {
       runPolling();
-      pollingInterval = setInterval(() => { runPolling() }, 2*1000);
+      pollingInterval = setInterval(() => { runPolling() }, 5*1000); // 5 seconds
       pollingTimeout = setTimeout(() => { expirePolling() }, 15*60*1000); // 15 minutes
     }
     else {
+      polling_inprogress = 0;
       clearInterval(pollingInterval);
       clearTimeout(pollingTimeout);
     }
@@ -262,10 +269,18 @@
   function runPolling() {
     polling_inprogress = 6;
 
-    fetch(`/api/trade?per_page=30&order=id&market_id=${market.id}`)
+    fetchMarketData();
+
+    // only call this when
+    fetchAccountData(); // db calls
+
+  }
+
+  function fetchMarketData() {
+    fetch(`/api/last_trades/${market.id}`)
     .then(r => r.json())
     .then(data => {
-      all_trades = data.results;
+      all_trades = data;
       polling_inprogress -= 1;
 
       if (all_trades.length){
@@ -278,9 +293,8 @@
     .then(data => {
       polling_inprogress -= 1;
       updateChart(data);
+      polling_last_dt = new Date()
     });
-
-    fetchChart()
 
     fetch(`/api/last24/${market.id}`)
     .then(r => r.json())
@@ -289,6 +303,11 @@
       polling_inprogress -= 1;
     });
 
+    fetchChart()
+
+  }
+
+  function fetchAccountData() {
     // User specific stuff only needs to update when the user
     // submits events
     fetch(`/api/balance?account_id=${account_id}`)
@@ -312,7 +331,6 @@
       polling_inprogress -= 1;
       fetchEvents()
     });
-
   }
 
   function fetchEvents() {
@@ -545,10 +563,11 @@
       </div>
       <div class="col s6 right-align">
         {#if polling_inprogress}
-          <span ><i class="fas fa-spinner fa-spin"></i> Polling..</span>
+          <span ><i class="fas fa-spinner fa-spin"></i></span>
         {:else if polling_expired}
           <span>Polling expired.</span>
         {/if}
+        Updated {formats.time(polling_last_dt)}
         <button class="btn-small" on:click={togglePolling}>
         {#if polling_on}
           Polling On
