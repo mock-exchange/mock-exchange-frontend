@@ -431,6 +431,9 @@
     .then(r => r.json())
     .then(data => {
       console.log('posted! data:',data)
+      fe['price'].value = ''
+      fe['amount'].value = ''
+      fe['total'].value = ''
     });
 
   }
