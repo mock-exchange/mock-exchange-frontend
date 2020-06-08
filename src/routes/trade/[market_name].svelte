@@ -12,7 +12,7 @@
 
     let markets_idx = {}
     markets.forEach(m => {
-      markets_idx[m['name']] = m
+      markets_idx[m['code']] = m
     })
 
     const market = markets_idx[market_name]
@@ -100,7 +100,7 @@
   $: if (process.browser) {
     console.log("proce ss.browser")
 
-    lastMarket.set(market.name)
+    lastMarket.set(market.code)
     user = JSON.parse(sessionStorage.getItem('user'))
     account_id = user.id
 
@@ -190,7 +190,7 @@
   }
 
   function fetchChart() {
-    fetch(`/api/book?market_id=${market.id}`)
+    fetch(`/api/${market.code}/book`)
     .then(r => r.json())
     .then(data => {
       polling_inprogress -= 1;
@@ -277,10 +277,10 @@
   }
 
   function fetchMarketData() {
-    fetch(`/api/last_trades/${market.id}`)
+    fetch(`/api/${market.code}/last_trades`)
     .then(r => r.json())
     .then(data => {
-      all_trades = data;
+      all_trades = data.slice(0,10);
       polling_inprogress -= 1;
 
       if (all_trades.length){
@@ -288,7 +288,7 @@
       }
     });
 
-    fetch(`/api/ohlc?interval=${interval}&market_id=${market.id}`)
+    fetch(`/api/${market.code}/ohlc/${interval}`)
     .then(r => r.json())
     .then(data => {
       polling_inprogress -= 1;
@@ -296,7 +296,7 @@
       polling_last_dt = new Date()
     });
 
-    fetch(`/api/last24/${market.id}`)
+    fetch(`/api/${market.code}/last24`)
     .then(r => r.json())
     .then(data => {
       last24 = data;
@@ -462,7 +462,7 @@
 
 <style>
   td, th {
-    padding:0;
+    padding: 0 5px;
   }
 
   .trade_topbar {
@@ -518,7 +518,7 @@
             <ul id="market_dropdown" class="collection dropdown-content">
               {#each markets as m }
                 <li>
-                <a href="/trade/{m.name}">
+                <a href="/trade/{m.code}">
                   <div><i class="{m.asset.icon} fa-fw"></i> {m.name}</div>
                 </a>
                 </li>
@@ -614,7 +614,7 @@
             <td>
               <span class="mex-id-field">
               {#if o.uuid}
-                { o.uuid.substring(0,8) }
+                { o.uuid.substring(0,8).toUpperCase() }
               {:else}
                 { o.id.toString().padStart(8, '0') }
               {/if}
@@ -724,18 +724,30 @@
         </tr>
         <tr>
           <td>Balance</td>
-          <td class="right-align">{uoa_wallet.balance}</td>
-          <td class="right-align">{asset_wallet.balance}</td>
+          <td class="right-align" title={uoa_wallet.balance}>
+            {formats.balance(uoa_wallet.balance)}
+          </td>
+          <td class="right-align" title={asset_wallet.balance}>
+            {formats.balance(asset_wallet.balance)}
+          </td>
         </tr>
         <tr>
           <td>Reserved</td>
-          <td class="right-align">{uoa_wallet.reserve}</td>
-          <td class="right-align">{asset_wallet.reserve}</td>
+          <td class="right-align" title={uoa_wallet.reserve}>
+            {formats.balance(uoa_wallet.reserve)}
+          </td>
+          <td class="right-align" title={asset_wallet.reserve}>
+            {formats.balance(asset_wallet.reserve)}
+          </td>
         </tr>
         <tr>
           <td>Available</td>
-          <td class="right-align">{uoa_wallet.balance - uoa_wallet.reserve}</td>
-          <td class="right-align">{asset_wallet.balance - asset_wallet.reserve}</td>
+          <td class="right-align" title={uoa_wallet.balance - uoa_wallet.reserve}>
+            {formats.balance(uoa_wallet.balance - uoa_wallet.reserve)}
+          </td>
+          <td class="right-align" title={asset_wallet.balance - asset_wallet.reserve}>
+            {formats.balance(asset_wallet.balance - asset_wallet.reserve)}
+          </td>
         </tr>
       </tbody>
     </table>
@@ -748,20 +760,20 @@
       </div>
 
       {#if all_trades}
-      <table>
+      <table class="trades-table">
         <thead>
           <tr>
-            <th>Amt</th>
-            <th>Price</th>
-            <th class="right-align">Time</th>
+            <th>Time</th>
+            <th class="right-align">Amount</th>
+            <th class="right-align">Price</th>
           </tr>
         </thead>
         <tbody>
           {#each all_trades as o }
           <tr>
-            <td>{ formats.number(o.amount) }</td>
-            <td>{ formats.currency_usd(o.price) }</td>
-            <td class="right-align">{ formats.time(o.created) }</td>
+            <td class="">{ formats.time(o.created) }</td>
+            <td class="right-align">{ formats.number(o.amount, 8) }</td>
+            <td class="right-align">{ formats.currency_usd(o.price) }</td>
           </tr>
           {/each}
         </tbody>

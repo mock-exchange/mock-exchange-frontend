@@ -20,6 +20,11 @@ const compactNumberFormat = new Intl.NumberFormat(locale, {
   notation: "compact" , compactDisplay: "short",
   minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
+const balanceNumberFormat = new Intl.NumberFormat(locale, {
+  notation: "compact" , compactDisplay: "short",
+  minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+
 export default {
   relative_dt(dt1, dt2){
     return formatDistanceStrict(dt1, dt2)
@@ -80,6 +85,10 @@ export default {
 
   compact_number(value) {
     return compactNumberFormat.format(value)
+  },
+
+  balance(value) {
+    return balanceNumberFormat.format(value)
   },
 
   order_num(value) {

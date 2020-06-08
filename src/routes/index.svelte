@@ -9,7 +9,7 @@
   let markets;
 
   onMount(async () => {
-    fetch(`/api/last24`)
+    fetch(`/api/all/last24`)
     .then(r => r.json())
     .then(data => {
       markets = data
@@ -37,7 +37,7 @@
   {#if markets}
     {#each markets as m }
     <tr>
-    <td><a href="/trade/{m.name}">{m.name}</a></td>
+    <td><a href="/trade/{m.code}">{m.name}</a></td>
     <td>{ formats.compact_number(m.volume) }</td>
     <td
       class:red-text={m.change < 0}
