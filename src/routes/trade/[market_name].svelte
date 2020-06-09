@@ -414,10 +414,9 @@
       method: 'place-order',
       account_id: account_id,
       body: JSON.stringify({
+        market_id: market.id,
         price: fe['price'].value,
         amount: fe['amount'].value,
-        market_id: market.id,
-        account_id: account_id,
         side: side
       })
     }
@@ -428,12 +427,21 @@
       },
       body: JSON.stringify(event)
     })
-    .then(r => r.json())
+    .then((response) => {
+      if (response.status >= 200 && response.status <= 299) {
+        return response.json();
+      } else {
+        throw Error(response.statusText);
+      }
+    })
     .then(data => {
       console.log('posted! data:',data)
       fe['price'].value = ''
       fe['amount'].value = ''
       fe['total'].value = ''
+    })
+    .catch((error) => {
+      console.log(error);
     });
 
   }
@@ -443,8 +451,6 @@
       method: 'cancel-order',
       account_id: account_id,
       body: JSON.stringify({
-        account_id: account_id,
-        order_id: order.id,
         uuid: order.uuid
       })
     }
