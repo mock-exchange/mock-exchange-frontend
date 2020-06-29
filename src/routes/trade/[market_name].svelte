@@ -250,7 +250,7 @@
 
     if (polling_on) {
       runPolling();
-      pollingInterval = setInterval(() => { runPolling() }, 5*1000); // 5 seconds
+      pollingInterval = setInterval(() => { runPolling() }, 2*1000); // 5 seconds
       pollingTimeout = setTimeout(() => { expirePolling() }, 15*60*1000); // 15 minutes
     }
     else {
@@ -417,7 +417,8 @@
         market_id: market.id,
         price: fe['price'].value,
         amount: fe['amount'].value,
-        side: side
+        side: side,
+        type: 'limit'
       })
     }
     fetch(`/api/event`, {
