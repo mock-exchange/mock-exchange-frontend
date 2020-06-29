@@ -14,7 +14,7 @@
       <th>Type</th>
       <th class="right-align">Price</th>
       <th class="right-align">Amount</th>
-      <th class="right-align">Balance</th>
+      <th class="right-align">Filled</th>
       <th class="right-align">Status</th>
     </tr>
   </thead>
@@ -22,20 +22,16 @@
     {#each rows as r }
     <tr>
       <td>
-        <span class="mex-id-field">
-        {#if r.uuid}
-          { r.uuid.substring(0,8) }
-        {:else}
-          { r.id.toString().padStart(8, '0') }
-        {/if}
-        </span>
+        <a href="">
+          <span class="mex-id-field">{ r.uuid.substring(0,8) }</span>
+        </a>
       </td>
       <td>{ formats.datetime(r.created) }</td>
       <td>{ r.market.name }</td>
       <td><span class="badge white-text" class:me-sell={r.side == 'sell'} class:me-buy={r.side == 'buy'}>{r.side }/{ r.type }</span></td>
       <td class="right-align">{ formats.currency_usd(r.price) }</td>
       <td class="right-align">{ formats.number(r.amount) }</td>
-      <td class="right-align">{ formats.number(r.balance) }</td>
+      <td class="right-align">{ formats.number(r.amount - r.balance) }</td>
       <td class="right-align">{ r.status }</td>
     </tr>
     {/each}

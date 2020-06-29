@@ -25,7 +25,7 @@
     },
     trades: {
       title: 'Trades',
-      base_url: '/api/trade'
+      base_url: '/api/trade_side'
     },
     ledger: {
       title: 'Ledger',

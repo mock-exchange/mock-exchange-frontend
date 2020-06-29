@@ -91,8 +91,20 @@ export default {
     return balanceNumberFormat.format(value)
   },
 
+  fullnum(value) {
+    var f = new Intl.NumberFormat(locale, {
+      minimumFractionDigits: 8, maximumFractionDigits: 8 }
+    );
+    return f.format(value);
+  },
+
   order_num(value) {
     return value.toString().padStart(8, '0')
+  },
+
+  capitalize(s) {
+    if (typeof s !== 'string') return ''
+    return s.charAt(0).toUpperCase() + s.slice(1)
   }
 }
 
