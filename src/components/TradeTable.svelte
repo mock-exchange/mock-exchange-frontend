@@ -37,7 +37,7 @@
       </td>
       <td class="right-align">
         <small>{r.type}</small>
-        { formats.percent(r.fee_rate) }
+        { formats.percent(r.fee_rate, 2) }
       </td>
       <td class="right-align">{ formats.fullnum(r.fee) }</td>
       <td class="right-align">{ formats.fullnum(r.amount) }</td>

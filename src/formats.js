@@ -10,10 +10,6 @@ const currencyUSDNoDecimalFormat = new Intl.NumberFormat(locale, {
   style: 'currency', currency: 'USD', minimumFractionDigits: 0,
   maximumFractionDigits: 0 });
 
-const percentFormat = new Intl.NumberFormat(locale, {
-  style: 'percent', minimumFractionDigits: 1,
-  maximumFractionDigits: 1 });
-
 const numberFormat = new Intl.NumberFormat(locale);
 
 const compactNumberFormat = new Intl.NumberFormat(locale, {
@@ -72,8 +68,12 @@ export default {
     return 'fix me'
   },
 
-  percent(value) {
-    return percentFormat.format(value)
+  percent(value, scale = 0) {
+    return new Intl.NumberFormat(locale, {
+      style: 'percent',
+      minimumFractionDigits: scale,
+      maximumFractionDigits: scale
+    }).format(value);
   },
 
   number(value, scale = 0) {
