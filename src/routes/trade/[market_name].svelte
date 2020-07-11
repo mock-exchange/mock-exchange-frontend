@@ -35,8 +35,8 @@
   export let market = {};
   export let markets = [];
 
-  const intervals = ['5m','15m','1h','6h','1d']
-  let interval = '15m'
+  const intervals = ['1m','5m','15m','1h','6h','1d']
+  let interval = '5m'
 
   let pollingInterval;
   let pollingTimeout;
@@ -421,7 +421,7 @@
         type: 'limit'
       })
     }
-    fetch(`/api/event`, {
+    fetch(`/api/event/${market.code}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -455,7 +455,7 @@
         uuid: order.uuid
       })
     }
-    fetch(`/api/event`, {
+    fetch(`/api/event/${market.code}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
